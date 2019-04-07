@@ -24,6 +24,11 @@
             <artifactId>vertx-web</artifactId>
             <version>${vertxVersion}</version>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-config</artifactId>
+            <version>${vertxVersion}</version>
+        </dependency>
     </dependencies>
 
     <build>
