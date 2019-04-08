@@ -1,11 +1,31 @@
 package cn.pgyyd.mcg;
 
 import cn.pgyyd.mcg.verticle.MainVerticle;
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 
 public class Main {
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
-        vertx.deployVerticle(MainVerticle.class.getName());
+
+        ConfigStoreOptions storeOptions = new ConfigStoreOptions().setType("file").setConfig(new JsonObject().put("path", "config.json"));
+        ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions().addStore(storeOptions);
+        ConfigRetriever retriever =  ConfigRetriever.create(vertx, retrieverOptions);
+        retriever.getConfig(cfg -> {
+            if (cfg.failed()) {
+                //TODO: log something
+            } else {
+                JsonObject config = cfg.result();
+                DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config);
+                int cores = Runtime.getRuntime().availableProcessors();
+                deploymentOptions.setInstances(config.getInteger("threads", cores));
+
+                vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions);
+            }
+        });
     }
 }

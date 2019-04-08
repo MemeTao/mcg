@@ -10,6 +10,6 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
         String courseids = event.request().getParam("courseids");
         event.response()
                 .putHeader("content-type", "text/plain")
-                .end("submit with uid:" + uid + ", courseids:" + courseids);
+                .end("submit with uid:" + uid + ", courseids:" + courseids + ", user == null:" + String.valueOf(event.user() == null));
     }
 }

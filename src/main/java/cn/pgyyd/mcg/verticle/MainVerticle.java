@@ -1,54 +1,37 @@
 package cn.pgyyd.mcg.verticle;
 
+import cn.pgyyd.mcg.auth.CjluAuth;
 import cn.pgyyd.mcg.constant.McgConst;
 import cn.pgyyd.mcg.module.CheckSelectionResultHandler;
 import cn.pgyyd.mcg.module.CourseInfoHandler;
 import cn.pgyyd.mcg.module.LoginHandler;
 import cn.pgyyd.mcg.module.SubmitSelectionHandler;
-import io.vertx.config.ConfigRetriever;
-import io.vertx.config.ConfigRetrieverOptions;
-import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.*;
+import io.vertx.ext.web.sstore.LocalSessionStore;
+import org.apache.commons.lang3.StringUtils;
 
 public class MainVerticle extends AbstractVerticle {
-    private JsonObject config;
 
     @Override
     public void start() throws Exception {
-        //先读取配置文件，读取完配置文件再初始化系统
-        ConfigStoreOptions storeOptions = new ConfigStoreOptions().setType("file").setConfig(new JsonObject().put("path", "config.json"));
-        ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions().addStore(storeOptions);
-        ConfigRetriever retriever =  ConfigRetriever.create(vertx, retrieverOptions);
-        retriever.getConfig(cfg -> {
-            if (cfg.failed()) {
-                //TODO: log something
-            } else {
-                this.config = cfg.result();
-                initVerticle();
-            }
-        });
-    }
-
-    private void initVerticle() {
         HttpServer httpServer = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
+        addLoginHandler(router);
         addMainPageHandler(router);
         addStaticResourceHandler(router);
         addCourseInfoHandler(router);
         addSubmitSelectionHandler(router);
         addCheckSelectionResultHandler(router);
-        addLoginHandler(router);
 
         httpServer.requestHandler(router);
 
-        //TODO: 端口改成从配置文件读取
-        httpServer.listen(this.config.getInteger("port"));
+        httpServer.listen(config().getInteger("port", 8080));
     }
 
 
@@ -80,7 +63,22 @@ public class MainVerticle extends AbstractVerticle {
         router.route(HttpMethod.POST, McgConst.CHECK_QUERY_PATH).handler(new CheckSelectionResultHandler());
     }
 
+    //登录与认证处理器
     private void addLoginHandler(Router router) {
-        router.route(HttpMethod.POST, McgConst.LOGIN_QUERY_PATH).handler(new LoginHandler());
+        AuthProvider authProvider = new CjluAuth();
+        //登录功能依次依赖于 用户session -> http session -> cookie
+        router.route().handler(CookieHandler.create());
+        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
+        router.route().handler(UserSessionHandler.create(authProvider));
+        router.route().handler(event -> {
+            if (StringUtils.equals(McgConst.LOGIN_QUERY_PATH, event.request().path())) {
+                event.next();
+            }
+            if (event.user() == null) {
+                event.fail(401);    //未登录
+            }
+            event.next();
+        });
+        router.route(HttpMethod.POST, McgConst.LOGIN_QUERY_PATH).handler(new LoginHandler(authProvider, McgConst.INDEX_HTML));
     }
 }
