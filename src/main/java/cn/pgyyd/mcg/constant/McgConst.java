@@ -9,6 +9,10 @@ public class McgConst {
 
     public static String STATIC_ASSERT_QUERY_PATH = "/asserts/*";
 
+    public static String SELECT_COURSE_QUEUE = "select.course.queue";
+
+    public static String SELECTING_COURSE = "select.course.doing";
+
     //检查某次选课的结果
     //e.g. www.xxxx.com/check?jobid=45263245
     public static String CHECK_QUERY_PATH = "/check";
