@@ -68,6 +68,7 @@ public class MainVerticle extends AbstractVerticle {
         AuthProvider authProvider = new CjluAuth();
         //登录功能依次依赖于 用户session -> http session -> cookie
         router.route().handler(CookieHandler.create());
+        //FIXME: 需求设置过期时间么
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
         router.route().handler(UserSessionHandler.create(authProvider));
         router.route().handler(event -> {
