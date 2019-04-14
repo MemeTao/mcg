@@ -53,6 +53,8 @@ Date:| 14-April-2019
 
 ---
 ### 4.选课请求接口
+#### URL
+> www.example.com/select
 #### 接口说明
 > 提交选中课程
 #### 请求方式
@@ -70,3 +72,7 @@ Date:| 14-April-2019
 
 ---
 ### 5.结果结果接口
+#### URL
+> www.example.com/select
+#### 请求方式
+> POST
