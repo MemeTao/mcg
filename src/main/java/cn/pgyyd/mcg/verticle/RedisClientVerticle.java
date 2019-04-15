@@ -29,24 +29,29 @@ public class RedisClientVerticle extends AbstractVerticle {
         if(port == null) {
             port = 8080;
         }
-        /*创建Redis客户端,默认配置:utf-8\tcp_keepalive\tcp_no_delay*/
-//        client = RedisClient.create(vertx,
-//                new RedisOptions().setHost(host).setPort(port));
-        /*client.select(dbindex, handler)
-        * client.auth();
-        * */
+        /*FIXME:添加client超时机制*/
+        client = RedisClient.create(vertx,
+                new RedisOptions().setHost(host).setPort(port));
+
         vertx.eventBus().consumer(RedisKeeper.GET,message->{
-            String key = new String(message.body().toString());
-            System.out.println("recive key:" + key);
+            //String key = message.body().toString();
         });
         
         vertx.eventBus().consumer(RedisKeeper.SET,message->{
-            ;
+            //String key = message.body().toString();
         });
+        
         vertx.eventBus().consumer(RedisKeeper.INCR,message->{
-            ;
+            String key = message.body().toString();
+            client.incr(key, res ->{
+                if(res.succeeded()) {
+                    message.reply(res.result());
+                }
+                else {
+                    message.fail(-1, res.cause().toString());
+                }
+            });
         });
-        System.out.println("RedisClientVerticle launched");
     }
 
 }

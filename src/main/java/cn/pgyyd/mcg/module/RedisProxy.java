@@ -8,15 +8,24 @@ import io.vertx.core.eventbus.Message;
 
 public class RedisProxy {
     private final static String GET = RedisClientVerticle.RedisKeeper.GET;
-    
+    private final static String INCR = RedisClientVerticle.RedisKeeper.INCR;
+    private final static String KEY_TASK_ID = "uuid/db_operation";
     private Vertx vertx;
+    
     public RedisProxy(Vertx v){
         vertx = v;
-        //vertx.eventBus().send(GET, message);
     }
     
-    public <T> void get(String key,Handler<AsyncResult<Message<T>>> replyHandler) {
-        System.out.println("try get key:" + key);
+    public void allocateTaskId(Handler<AsyncResult<Message<Long>>> replyHandler)
+    {
+        incr(KEY_TASK_ID,replyHandler);
+    }
+
+    private <T> void get(String key,Handler<AsyncResult<Message<T>>> replyHandler) {
         vertx.eventBus().send(GET,key,replyHandler);
+    }
+    
+    private <T> void incr(String key,Handler<AsyncResult<Message<T>>> replyHandler) {
+        vertx.eventBus().send(INCR,key,replyHandler);
     }
 }
