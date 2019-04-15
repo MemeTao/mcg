@@ -12,10 +12,10 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
          * 1.获取一个新的task_id(由Redis生成全局唯一的id不太可靠)
          * */
         String task_id = "wait for db # abcd";
-        System.out.println("task id :" + task_id);
-        new RedisProxy(event.vertx()).get("task id", res ->{
-            System.out.println("get task id : " + res.result().body());
-        });
+        System.out.println("task id :" + courseids);
+//        new RedisProxy(event.vertx()).get("task id", res ->{
+//            System.out.println("get task id : " + res.result().body());
+//        });
         
         event.response()
                 .putHeader("content-type", "text/plain")
