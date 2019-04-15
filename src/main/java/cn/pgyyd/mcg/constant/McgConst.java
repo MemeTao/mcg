@@ -13,6 +13,8 @@ public class McgConst {
 
     public static String SELECTING_COURSE = "select.course.doing";
 
+    public static String EVENT_BUS_SELECT_COURSE = "select.course";
+
     //检查某次选课的结果
     //e.g. www.xxxx.com/check?jobid=45263245
     public static String CHECK_QUERY_PATH = "/check";

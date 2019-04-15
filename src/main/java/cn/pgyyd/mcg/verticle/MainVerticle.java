@@ -55,7 +55,7 @@ public class MainVerticle extends AbstractVerticle {
 
     //选课请求处理器
     private void addSubmitSelectionHandler(Router router) {
-        router.route(HttpMethod.POST, McgConst.SELECT_QUERY_PATH).handler(new SubmitSelectionHandler());
+        router.route(HttpMethod.POST, McgConst.SELECT_QUERY_PATH).handler(new SubmitSelectionHandler(config().getInteger("max_jobs")));
     }
 
     //轮询选课结果请求处理器
@@ -73,6 +73,7 @@ public class MainVerticle extends AbstractVerticle {
         router.route().handler(event -> {
             if (StringUtils.equals(McgConst.LOGIN_QUERY_PATH, event.request().path())) {
                 event.next();
+                return;
             }
             if (event.user() == null) {
                 event.fail(401);    //未登录

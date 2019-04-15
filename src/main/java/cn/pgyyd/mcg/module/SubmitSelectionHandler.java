@@ -15,6 +15,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SubmitSelectionHandler implements Handler<RoutingContext> {
+
+    private int MAX_DOING_JOBS;
+
+    public SubmitSelectionHandler(int jobs) {
+        MAX_DOING_JOBS = jobs;
+    }
+
     @Override
     public void handle(RoutingContext event) {
         String uid = event.request().getParam("uid");
@@ -41,17 +48,34 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
             return;
         }
 
-        int doingJobs = JobCounter.getInstance().get();
-        if (doingJobs < 50) {
-            //TODO: 完善逻辑
-            event.vertx().eventBus().send(McgConst.SELECTING_COURSE, new SelectCourseRequest(userId, -1, courseIdList), res->{
-                SelectCourseResult result = (SelectCourseResult)res.result().body();
-                event.response().putHeader("content-type", "application/json").end(new JsonObject().toString());
-            });
-        } else {
-            int jobId = JobIDGenerator.getInstance().generate();
-            event.vertx().eventBus().send(McgConst.SELECT_COURSE_QUEUE, new SelectCourseRequest(userId, jobId, courseIdList));
-            event.response().putHeader("content-type", "application/json").end(new JsonObject().put("jobid", jobId).toString());
-        }
+        event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, new SelectCourseRequest(userId, courseIdList), res-> {
+            SelectCourseResult result = (SelectCourseResult) res.result().body();
+            switch (result.Status) {
+                //直接选课成功
+                case 0:
+                    event.response()
+                            .putHeader("content-type", "application/json")
+                            .end(new JsonObject()
+                                    .put("status_code", 0)
+                                    .toString());
+                    break;
+                //选课失败
+                case 1:
+                    event.response()
+                            .putHeader("content-type", "application/json")
+                            .end(new JsonObject()
+                                    .put("status_code", 1)
+                                    .toString());
+                    break;
+                //选课排队中
+                case 2:
+                    event.response()
+                            .putHeader("content-type", "application/json")
+                            .end(new JsonObject()
+                                    .put("status_code", 2)
+                                    .put("jobid", result.PendingID)
+                                    .toString());
+            }
+        });
     }
 }

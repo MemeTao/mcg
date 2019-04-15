@@ -28,4 +28,8 @@ public class JobCounter {
         return atomicInteger.get();
     }
 
+    public boolean compareAndSet(int expect, int newVal) {
+        return atomicInteger.compareAndSet(expect, newVal);
+    }
+
 }
