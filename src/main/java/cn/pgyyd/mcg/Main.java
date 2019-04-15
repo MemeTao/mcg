@@ -1,6 +1,7 @@
 package cn.pgyyd.mcg;
 
 import cn.pgyyd.mcg.verticle.MainVerticle;
+import cn.pgyyd.mcg.verticle.RedisClientVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -25,6 +26,7 @@ public class Main {
                 deploymentOptions.setInstances(config.getInteger("threads", cores));
 
                 vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions);
+                vertx.deployVerticle(RedisClientVerticle.class.getName());
             }
         });
     }
