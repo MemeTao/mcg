@@ -42,10 +42,17 @@
             <version>${vertxVersion}</version>
         </dependency>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-mysql-postgresql-client</artifactId>
+            <version>${vertxVersion}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
         </dependency>
+        
     </dependencies>
 
     <build>

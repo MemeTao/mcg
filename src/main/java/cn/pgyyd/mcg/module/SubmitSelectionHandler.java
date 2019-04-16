@@ -30,7 +30,7 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                 this.allocatedTaskId(res,event);
             }
             else {
-                allocateTaskIdFail(event,res.cause().toString());
+                this.allocateTaskIdFail(event,res.cause().toString());
             }
         };
         /*示例: 通过RedisProxy获取全局唯一的task id*/

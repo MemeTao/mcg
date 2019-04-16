@@ -32,7 +32,7 @@ public class RedisClientVerticle extends AbstractVerticle {
         /*FIXME:添加client超时机制*/
         client = RedisClient.create(vertx,
                 new RedisOptions().setHost(host).setPort(port));
-
+        
         vertx.eventBus().consumer(RedisKeeper.GET,message->{
             //String key = message.body().toString();
         });
