@@ -90,8 +90,10 @@ public class MySqlVerticle extends AbstractVerticle {
                     }
                     execute_sql(conn,next.getKey(),next.getValue());
                 }
-                //FIXME:++ 和 -- 写在一块才对
-                available_connections ++;   
+                else {
+                    //FIXME: ++ 和 -- 写在一块才对
+                    available_connections ++;
+                }
             });
     }
     
