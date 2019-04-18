@@ -14,6 +14,8 @@ public class MysqlProxy {
     
     private static String QUERY = MySqlVerticle.QUERY;
     
+    private static String UPDATE = MySqlVerticle.UPDATE;
+    
     private static String TRANSACTION = MySqlVerticle.TRANSACTION;
     
     private Vertx vertx;
@@ -30,6 +32,10 @@ public class MysqlProxy {
         vertx.eventBus().send(QUERY,op,replyHandler);
     }
     
+    //update
+    public <T> void update(String op,Handler<AsyncResult<Message<T>>> replyHandler) {
+        vertx.eventBus().send(UPDATE,op,replyHandler);
+    }
     /*不直接提供事务接口，而以具体的业务接口的形式给出
      * 底层负责“失败回滚”操作
      * */

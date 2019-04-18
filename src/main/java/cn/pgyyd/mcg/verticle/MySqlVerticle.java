@@ -23,6 +23,8 @@ public class MySqlVerticle extends AbstractVerticle {
     
     final public static String QUERY = "mysql-query";
     
+    final public static String UPDATE = "musql-update";
+    
     public static String TRANSACTION = "mysql-transaction";
     
     private int connection_pool_size = DEFAULT_POOL_SIZE;
@@ -131,7 +133,7 @@ public class MySqlVerticle extends AbstractVerticle {
      * @param op   待执行操作
      * @param message 
      */
-    private <T> void execute(SQLConnection conn,Long time,String op,Message<T> message) {
+    private <T> void execute(SQLConnection conn,String op,Message<T> message) {
         conn.execute(op, res->{
             if(res.succeeded()) {
                 /*获取结果并返回*/
@@ -141,8 +143,20 @@ public class MySqlVerticle extends AbstractVerticle {
             reSchedule(conn);
         });
     }
-    private <T> void query(SQLConnection conn,Long time,String op,Message<T> message) {
+    
+    private <T> void query(SQLConnection conn,String op,Message<T> message) {
         conn.query(op, res->{
+            if(res.succeeded()) {
+                /*获取结果并返回*/
+                message.reply(res.result());
+            }
+            /**释放该链接，重新调度任务*/
+            reSchedule(conn);
+        });
+    }
+    
+    private <T> void update(SQLConnection conn,String op,Message<T> message) {
+        conn.update(op, res->{
             if(res.succeeded()) {
                 /*获取结果并返回*/
                 message.reply(res.result());
@@ -248,10 +262,13 @@ public class MySqlVerticle extends AbstractVerticle {
                 final String op = next.getValue().op;
                 switch(op) {
                 case EXEC:
-                    execute(conn,next.getKey(),next.getValue().task,next.getValue().mess);
+                    execute(conn,next.getValue().task,next.getValue().mess);
                     break;
                 case QUERY:
-                    query(conn,next.getKey(),next.getValue().task,next.getValue().mess);
+                    query(conn,next.getValue().task,next.getValue().mess);
+                    break;
+                case UPDATE:
+                    update(conn,next.getValue().task,next.getValue().mess);
                     break;
                 default:
                     break;
