@@ -29,9 +29,20 @@ public class MysqlProxy {
     public MysqlProxy(Vertx v){
         vertx = v;
     }
+    /**
+     * 示例：获取课程表中的所有课程id
+     * @param reply
+     */
+    public void getCoursesIdList(Handler<List<Integer>> reply) {
+        String sql = "select courseId from mcg_course";
+        query(sql,res->{
+            System.out.println("ids:" + res.result().getRows());
+        });
+    }
+    
     /**为了完全和"直接使用mysql"的返回值一致，这里做了一次变换
      */
-    public <T> void execute(String op,Handler<AsyncResult<Void>> reply) {
+    public void execute(String op,Handler<AsyncResult<Void>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.ExecuteMessage>>> handler = res ->{
             AsyncResult<Void> result = res.result().body().result();
             reply.handle(result);
@@ -50,7 +61,7 @@ public class MysqlProxy {
     }
     
     //update
-    public <T> void update(String op,Handler<AsyncResult<UpdateResult>> reply) {
+    public void update(String op,Handler<AsyncResult<UpdateResult>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.UpdateMessage>>> handler = res ->{
             AsyncResult<UpdateResult> result = res.result().body().result();
             reply.handle(result);
@@ -61,7 +72,7 @@ public class MysqlProxy {
     /*不直接提供事务接口，而以具体的业务接口的形式给出
      * 底层负责“失败回滚”操作
      * */
-    private <T> void transaction(List<String> ops,Handler<AsyncResult<CompositeFuture>> reply) {
+    private void transaction(List<String> ops,Handler<AsyncResult<CompositeFuture>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.CompositeMessage>>> handler = res ->{
             AsyncResult<CompositeFuture> result = res.result().body().result();
             reply.handle(result);

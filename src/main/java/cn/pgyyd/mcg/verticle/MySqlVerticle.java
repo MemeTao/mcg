@@ -119,8 +119,8 @@ public class MySqlVerticle extends AbstractVerticle {
         vertx.eventBus().registerCodec(new UserMessageCodec.Mysql());
         
         vertx.eventBus().consumer(EXEC,message->{
-            ResultSet mess = (io.vertx.ext.sql.ResultSet) message.body();
-            tasks.put( accounter_tasks ++, new TaskOp(op,message,EXEC));
+            UpdateMessage mess = (UpdateMessage) message.body();
+            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,EXEC));
             schedule();
         });
 
@@ -131,9 +131,8 @@ public class MySqlVerticle extends AbstractVerticle {
         });
         
         vertx.eventBus().consumer(TRANSACTION,message->{
-            @SuppressWarnings("unchecked")
-            List<String> ops = (List<String>) message.body();
-            tasks_transaction.put(accounter_transaction,new TaskTransaction(ops,message));
+            CompositeMessage mess = (CompositeMessage) message.body();
+            tasks_transaction.put(accounter_transaction,new TaskTransaction(mess.operations(),message));
             schedule();
         });
     }
