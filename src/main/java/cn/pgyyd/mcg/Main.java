@@ -1,6 +1,7 @@
 package cn.pgyyd.mcg;
 
 import cn.pgyyd.mcg.verticle.MainVerticle;
+import cn.pgyyd.mcg.verticle.SelectCourseVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -19,12 +20,18 @@ public class Main {
             if (cfg.failed()) {
                 //TODO: log something
             } else {
-                JsonObject config = cfg.result();
-                DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config);
-                int cores = Runtime.getRuntime().availableProcessors();
-                deploymentOptions.setInstances(config.getInteger("threads", cores));
+                vertx.deployVerticle(SelectCourseVerticle.class.getName(), res->{
+                    if (!res.succeeded()) {
+                        //TODO: log something
+                    } else {
+                        JsonObject config = cfg.result();
+                        DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config);
+                        int cores = Runtime.getRuntime().availableProcessors();
+                        deploymentOptions.setInstances(config.getInteger("threads", cores));
 
-                vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions);
+                        vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions);
+                    }
+                });
             }
         });
     }

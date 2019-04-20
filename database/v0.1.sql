@@ -62,6 +62,7 @@ CREATE TABLE `mcg_user_teacher` (
 -- 课程基本信息
 CREATE TABLE `mcg_course_basic` (
   `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `courseId` int(20) NOT NULL COMMENT '课程id',
   `code` varchar(50) NOT NULL COMMENT '编码',
   `name` int(20) NOT NULL COMMENT '名称',
   `time` int(20) NOT NULL COMMENT '时长',
@@ -73,6 +74,7 @@ CREATE TABLE `mcg_course_basic` (
 -- 课程
 CREATE TABLE `mcg_course` (
   `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `courseId` int(20) NOT NULL COMMENT '课程id',
   `basicId` int(20) NOT NULL COMMENT '课程基本信息id',
   `teacherId` int(20) NOT NULL COMMENT '老师id',
   `type` int(4) NOT NULL DEFAULT '0' COMMENT '选课类型：0院选 1校选',
