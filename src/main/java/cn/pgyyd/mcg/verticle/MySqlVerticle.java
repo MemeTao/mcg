@@ -119,11 +119,17 @@ public class MySqlVerticle extends AbstractVerticle {
         vertx.eventBus().registerCodec(new UserMessageCodec.Mysql());
         
         vertx.eventBus().consumer(EXEC,message->{
-            UpdateMessage mess = (UpdateMessage) message.body();
+            ExecuteMessage mess = (ExecuteMessage) message.body();
             tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,EXEC));
             schedule();
         });
-
+        
+        vertx.eventBus().consumer(UPDATE,message->{
+            UpdateMessage mess = (UpdateMessage) message.body();
+            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,UPDATE));
+            schedule();
+        });
+        
         vertx.eventBus().consumer(QUERY,message->{
             QueryMessage mess = (QueryMessage) message.body();
             tasks.put(accounter_tasks ++, new TaskOp(mess.operation(),message,QUERY));
