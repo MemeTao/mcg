@@ -54,28 +54,7 @@ public class SelectCourseVerticle  extends AbstractVerticle {
             emptySeat.add(1);
         }
         mysqlProxy = new MysqlProxy(vertx);
-        /*
-        vertx.eventBus().consumer(McgConst.EVENT_BUS_SELECT_COURSE, msg->{
-            if (doingJobs <= MAX_DOING_JOBS) {
-                //立即选课，并返回选课结果
-                JsonObject mySQLClientConfig = new JsonObject().put("host", "mymysqldb.mycompany");
-                SQLClient sqlClient = MySQLClient.createShared(vertx, mySQLClientConfig, "select.write");
-                sqlClient.getConnection(res->{
-                    if (res.succeeded()) {
-                        SQLConnection conn = res.result();
-                    } else {
-                        //
-                    }
-                });
-                msg.reply(new SelectCourseResult(0, -1));
-            } else {
-                SelectCourseRequest request = (SelectCourseRequest)msg.body();
-                request.JobID = JobIDGenerator.getInstance().generate();
-                jobQueue.add(request);
-                msg.reply(new SelectCourseResult(2, request.JobID));
-            }
-        });
-        */
+
         vertx.eventBus().consumer(McgConst.EVENT_BUS_SELECT_COURSE, msg->{
             Integer seat = emptySeat.poll();
             if (seat == null) {
