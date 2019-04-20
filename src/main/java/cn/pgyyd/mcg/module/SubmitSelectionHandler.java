@@ -1,9 +1,12 @@
 package cn.pgyyd.mcg.module;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.ext.web.RoutingContext;
@@ -22,13 +25,8 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
         Info info = new Info();
         info.student_id = uid;
         info.courseids = Arrays.asList(courseids);
-        Handler<AsyncResult<Message<Long>>> handler = res->{
-            if(res.succeeded()) {
+        Handler<AsyncResult<Long>> handler = res->{
                 this.allocatedTaskId(res,event,info);
-            }
-            else {
-                this.allocateTaskIdFail(event,res.cause().toString());
-            }
         };
         
         /**示例: 通过RedisProxy获取全局唯一的task id
@@ -41,7 +39,7 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
      * @param event
      * @param courseids
      */
-    private void allocatedTaskId(AsyncResult<Message<Long>> res,RoutingContext event,Info info){
+    private void allocatedTaskId(AsyncResult<Long> res,RoutingContext event,Info info){
         /* 在这之前，redis中应该存在了以下信息：
          * task_id   status
          *   1        ing
@@ -50,11 +48,12 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
          *   ...      ...
          *   x        ing        第一列表示任务id，第二列表示该任务的执行状态
          */
-        Long task_id = new Long(res.result().body());
-        /**
-         * 立即返回taskid
-         */
-        event.response()
+        if(res.failed()) {
+            allocateTaskIdFail(event,info);
+            return;
+        }
+        long task_id = res.result();
+        event.response()   /*统一让前端轮询*/
             .putHeader("content-type", "text/plain")
             .end("task_id = " + task_id);
         /**
@@ -70,11 +69,25 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
          *        这步不至于失败,即使失败也可以通过人工（通过日志信息或者其它途径）修复改问题，
          *        这样就可以把3.2和"更新剩余人数"给分开操作
          */
+        List<Future<Void>> futures = new ArrayList<Future<Void>>();
+        new MysqlProxy(event.vertx()).getCourseIdList(reply ->{
+            Future<Void> f = Future.future();
+            futures.add(f);
+            for(String id : info.courseids) {
+                if(!reply.contains(id)) {  //不剔除了（肯定是前端代码出错了)
+                    f.fail("not exsit course id:" + id);
+                }
+            }
+            f.complete();
+         });
+        CompositeFuture.all(new ArrayList<>(futures)).setHandler( res->{
+            
+        });
     }
     
-    private void allocateTaskIdFail(RoutingContext event,String failed_reason) {
+    private void allocateTaskIdFail(RoutingContext event,Info info) {
         event.response()
             .putHeader("content-type", "text/plain")
-            .end("task_id = null,error:" + failed_reason);
+            .end("task_id = null,error:" + info);
     }
 }

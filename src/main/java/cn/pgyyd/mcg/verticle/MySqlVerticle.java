@@ -10,9 +10,7 @@ import cn.pgyyd.mcg.module.MysqlMessage.ExecuteMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.QueryMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.UpdateMessage;
 import cn.pgyyd.mcg.module.UserMessageCodec;
-
 import java.util.TreeMap;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -21,7 +19,6 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 
 public class MySqlVerticle extends AbstractVerticle {
@@ -132,7 +129,7 @@ public class MySqlVerticle extends AbstractVerticle {
         
         vertx.eventBus().consumer(QUERY,message->{
             QueryMessage mess = (QueryMessage) message.body();
-            tasks.put(accounter_tasks ++, new TaskOp(mess.operation(),message,QUERY));
+            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,QUERY));
             schedule();
         });
         
