@@ -1,5 +1,6 @@
 package cn.pgyyd.mcg.module;
 
+import java.util.HashSet;
 import java.util.List;
 
 import cn.pgyyd.mcg.verticle.MySqlVerticle;
@@ -9,6 +10,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 
@@ -33,13 +35,19 @@ public class MysqlProxy {
      * 示例：获取课程表中的所有课程id
      * @param reply
      */
-    public void getCoursesIdList(Handler<List<Integer>> reply) {
+    public void getCourseIdList(Handler<HashSet<Integer>> reply) {
         String sql = "select courseId from mcg_course";
         query(sql,res->{
-            System.out.println("ids:" + res.result().getRows());
+            HashSet<Integer> ids = new HashSet<Integer>();
+            if( res.succeeded() ) {
+                String column_name = res.result().getColumnNames().get(0);
+                for(JsonObject obj : res.result().getRows()) {
+                    ids.add(obj.getInteger(column_name));
+                }
+            }
+            reply.handle(ids);
         });
     }
-    
     /**为了完全和"直接使用mysql"的返回值一致，这里做了一次变换
      */
     public void execute(String op,Handler<AsyncResult<Void>> reply) {
