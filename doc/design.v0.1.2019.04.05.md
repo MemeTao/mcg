@@ -71,16 +71,16 @@ Date:| 5-April-2019
 ## 数据库
 ### 数据库说明文档
 #### 1.总共11张表
-学院表 mcg_institute
-专业表 mcg_major
-班级表 mcg_class
-用户表 mcg_user
-学生表 mcg_user_student
-老师表 mcg_user_teacher
-课程基本信息表 mcg_course_basic
-课程表 mcg_course
-课程时间表 mcg_course_timerange
-学生选课信息表 mcg_student_course_relation
+学院表 mcg_institute  
+专业表 mcg_major  
+班级表 mcg_class  
+用户表 mcg_user  
+学生表 mcg_user_student  
+老师表 mcg_user_teacher  
+课程基本信息表 mcg_course_basic  
+课程表 mcg_course  
+课程时间表 mcg_course_timerange  
+学生选课信息表 mcg_student_course_relation  
 选课中课程信息表 mcg_course_remain
 
 #### 2.表结构的设计理念
