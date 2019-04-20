@@ -32,7 +32,6 @@ public class Main {
                         vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions);
                     }
                 });
-
             }
         });
     }

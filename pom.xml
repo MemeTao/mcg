@@ -11,6 +11,8 @@
     <properties>
         <mainClass>cn.pgyyd.mcg.Main</mainClass>
         <vertxVersion>3.6.3</vertxVersion>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <dependencies>
@@ -40,10 +42,17 @@
             <version>${vertxVersion}</version>
         </dependency>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-redis-client</artifactId>
+            <version>${vertxVersion}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
         </dependency>
+        
     </dependencies>
 
     <build>
