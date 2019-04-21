@@ -16,7 +16,7 @@ public class JobIDGenerator {
     private JobIDGenerator() {
     }
 
-    public int generate() {
+    public long generate() {
         return atomicInteger.incrementAndGet();
     }
 }

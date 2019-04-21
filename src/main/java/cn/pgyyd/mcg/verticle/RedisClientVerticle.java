@@ -46,7 +46,7 @@ public class RedisClientVerticle extends AbstractVerticle {
         System.out.println("[info] waiting for mysql initilization to complete...");
         Thread.sleep(1000);
         String get_course_ids = "select courseId from mcg_course";
-        new MysqlProxy(vertx).getCoursesIdList(null);
+        new MysqlProxy(vertx).getCourseIdList(null);
     }
     
     static public RedisClient client() {
