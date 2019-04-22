@@ -6,13 +6,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import cn.pgyyd.mcg.module.MysqlMessage.QueryMessage;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
 
 public class UserMessageCodec{
     
-    static public class Mysql implements MessageCodec<QueryMessage, QueryMessage> {
+    static public class Mysql<T> implements MessageCodec<T, T> {
         /**
          * 将消息实体封装到Buffer用于传输
          * 
@@ -20,7 +19,7 @@ public class UserMessageCodec{
          *   使用对象流从对象中获取Byte数组然后追加到Buffer
          */
         @Override
-        public void encodeToWire(Buffer buffer, QueryMessage s) {
+        public void encodeToWire(Buffer buffer, T s) {
             final ByteArrayOutputStream b = new ByteArrayOutputStream();
             ObjectOutputStream o;
             try {
@@ -35,14 +34,15 @@ public class UserMessageCodec{
         /**
          * 从buffer中获取传输的消息实体
          */
+        @SuppressWarnings("unchecked")
         @Override
-        public QueryMessage decodeFromWire(int pos, Buffer buffer) {
+        public T decodeFromWire(int pos, Buffer buffer) {
              final ByteArrayInputStream b = new ByteArrayInputStream(buffer.getBytes());
              ObjectInputStream o = null;
-             QueryMessage msg = null;
+             T msg = null;
              try {
                 o = new ObjectInputStream(b);
-                msg = (QueryMessage) o.readObject();
+                msg = (T) o.readObject();
              } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
              }
@@ -53,7 +53,7 @@ public class UserMessageCodec{
          * 如果是本地消息则直接返回
          */
         @Override
-        public QueryMessage transform(QueryMessage s) {
+        public T transform(T s) {
             return s;
         }
         /**

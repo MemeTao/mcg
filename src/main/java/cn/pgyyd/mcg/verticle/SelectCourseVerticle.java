@@ -56,22 +56,14 @@ public class SelectCourseVerticle  extends AbstractVerticle {
         mysqlProxy = new MysqlProxy(vertx);
 
         vertx.eventBus().consumer(McgConst.EVENT_BUS_SELECT_COURSE, msg->{
-            Integer seat = emptySeat.poll();
-            if (seat == null) {
-                //如果已经没有空余位置，排队，并立即返回排队id
-                long jobID = JobIDGenerator.getInstance().generate();
-                waitForAvailableSeat(new Task(msg, jobID));
-                msg.reply(new SelectCourseResult(1, jobID));
-            } else {
-                doSelectCourse(new Task(msg), e->{
-                    if (e.succeeded()) {
-                        e.result().reply(new SelectCourseResult(0, -1));
-                    } else {
-                        //不应该走到这来
-                        //e.result().reply(new SelectCourseResult(-1, -1));
-                    }
-                });
-            }
+            doSelectCourse(new Task(msg), e->{
+                if (e.succeeded()) {
+                    e.result().reply(new SelectCourseResult(0, -1));
+                } else {
+                    //不应该走到这来
+                    //e.result().reply(new SelectCourseResult(-1, -1));
+                }
+            });
         });
     }
 

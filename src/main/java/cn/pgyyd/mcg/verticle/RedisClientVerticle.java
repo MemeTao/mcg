@@ -2,7 +2,6 @@ package cn.pgyyd.mcg.verticle;
 
 import cn.pgyyd.mcg.module.MysqlProxy;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Vertx;
 import io.vertx.redis.RedisClient;
 
 /**
@@ -34,11 +33,11 @@ public class RedisClientVerticle extends AbstractVerticle {
 ////        client = RedisClient.create(vertx,
 ////                new RedisOptions().setHost(host).setPort(port));
 //        //transaction_client = client.transaction();
-//        System.out.println("[info] waiting for mysql initilization to complete...");
-//        Thread.sleep(1000);
-//        new MysqlProxy(vertx).getCourseIdList(res->{
-//            System.out.println("course id list:" + res);
-//        });
+        System.out.println("[info] waiting for mysql initilization to complete...");
+        Thread.sleep(1000);
+        new MysqlProxy(vertx).getCourseIdList(res->{
+            System.out.println("course id list:" + res);
+        });
     }
     
     static public RedisClient client() {

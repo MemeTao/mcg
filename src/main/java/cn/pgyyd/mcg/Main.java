@@ -1,6 +1,8 @@
 package cn.pgyyd.mcg;
 
 import cn.pgyyd.mcg.verticle.MainVerticle;
+import cn.pgyyd.mcg.verticle.MySqlVerticle;
+import cn.pgyyd.mcg.verticle.RedisClientVerticle;
 import cn.pgyyd.mcg.verticle.SelectCourseVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -30,6 +32,8 @@ public class Main {
                         deploymentOptions.setInstances(config.getInteger("threads", cores));
 
                         vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions);
+                        vertx.deployVerticle(MySqlVerticle.class.getName());
+                        vertx.deployVerticle(RedisClientVerticle.class.getName());
                     }
                 });
             }

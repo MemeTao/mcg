@@ -113,7 +113,10 @@ public class MySqlVerticle extends AbstractVerticle {
         tasks = new TreeMap<Long,TaskOp>();
         tasks_transaction = new TreeMap<Long,TaskTransaction>();
         
-        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql());
+        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql<QueryMessage>());
+        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql<UpdateMessage>());
+        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql<ExecuteMessage>());
+        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql<CompositeMessage>());
         
         vertx.eventBus().consumer(EXEC,message->{
             ExecuteMessage mess = (ExecuteMessage) message.body();
@@ -142,7 +145,6 @@ public class MySqlVerticle extends AbstractVerticle {
     /**
      * @param <T>
      * @param conn 分配到的数据库连接
-     * @param time 创建时间
      * @param op   待执行操作
      * @param message 
      */
@@ -176,7 +178,6 @@ public class MySqlVerticle extends AbstractVerticle {
     /**
      * @param <T>
      * @param conn  分配到的数据库连接
-     * @param time  创建时间
      * @param ops   待执行事务
      * @param message
      */
