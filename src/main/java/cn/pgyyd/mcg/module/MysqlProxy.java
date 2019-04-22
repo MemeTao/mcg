@@ -1,9 +1,7 @@
 package cn.pgyyd.mcg.module;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import cn.pgyyd.mcg.verticle.MySqlVerticle;
 import io.vertx.core.AsyncResult;
@@ -50,7 +48,6 @@ public class MysqlProxy {
             reply.handle(ids);
         });
     }
-    
     /**为了完全和"直接使用mysql"的返回值一致，这里做了一次变换
      */
     public void execute(String op,Handler<AsyncResult<Void>> reply) {
