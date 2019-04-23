@@ -78,7 +78,8 @@ class SelectCourseVericleKt : CoroutineVerticle() {
             } else {
                 //结果插入redis
             }
-            //tryPollJobQueue
+            tryPollJobQueue()
+            return
         } else {
             //从studentCourseTable提取课表信息，主要是上课时间
         }
@@ -94,12 +95,21 @@ class SelectCourseVericleKt : CoroutineVerticle() {
             }
         }
         //结果插入redis
-        //tryPollJobQueue
+        tryPollJobQueue()
     }
 
     //学生和课程时间匹配
     private fun timeMatch(): Boolean {
         return true
+    }
+
+    private fun tryPollJobQueue() {
+        val task = jobQueue.poll()
+        if (task != null) {
+            launch {
+                doSelectCourse(task)
+            }
+        }
     }
 
 }
