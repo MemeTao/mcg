@@ -2,6 +2,7 @@ package cn.pgyyd.mcg.module;
 
 import io.vertx.core.AsyncResult;
 
+
 public class AllcateTaskIdResult implements AsyncResult<Long> {
     private  Long taskid;
     public AllcateTaskIdResult(Long id) {

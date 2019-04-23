@@ -66,7 +66,40 @@ class SelectCourseVericleKt : CoroutineVerticle() {
         //4. 向handler写入结果: handler.handle(Future.succeededFuture(msg));
         //5. 处理剩余数据库操作
         //6. 退出
+        var finalResult = SelectCourseResult(0, task.jobid)
         val mysqlConn = mySqlClient.getConnectionAwait()
-        val studentCourseTable = mysqlConn.queryAwait("select xx from xx")
+        val studentCourseTable = mysqlConn.queryAwait("select xx from xx").results  //学生自己的课表
+        if (studentCourseTable.size == 0) {
+            //获取学生课表失败
+            if (task.jobid == -1L) {
+                //立马返回，告知失败
+                finalResult.Results = ArrayList<SelectCourseResult.Result>()
+                task.msg.reply(finalResult)
+            } else {
+                //结果插入redis
+            }
+            //tryPollJobQueue
+        } else {
+            //从studentCourseTable提取课表信息，主要是上课时间
+        }
+
+        val courseInfo = mysqlConn.queryAwait("select xx from xx").results          //所选课程的信息，主要是上课时间
+        for (row in courseInfo) {
+            //TODO: 获取每一个课程的上课时间
+            //if (timeMatch(student, course)) {
+            if (timeMatch()) {
+                finalResult.Results.add(finalResult.Result(true, 1))    //FIXME: 填入courseid
+            } else {
+                finalResult.Results.add(finalResult.Result(false, 1))
+            }
+        }
+        //结果插入redis
+        //tryPollJobQueue
     }
+
+    //学生和课程时间匹配
+    private fun timeMatch(): Boolean {
+        return true
+    }
+
 }

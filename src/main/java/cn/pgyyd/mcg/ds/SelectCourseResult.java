@@ -5,6 +5,11 @@ import java.util.List;
 //TODO: 完善选课结果的逻辑，如部分成功选课
 public class SelectCourseResult {
     public class Result {
+        public Result() {}
+        public Result(boolean success, long courseid) {
+            Success = success;
+            CourseID = courseid;
+        }
         public boolean Success;
         public long CourseID;
     }
