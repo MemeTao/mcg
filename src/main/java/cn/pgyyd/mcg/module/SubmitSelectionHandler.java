@@ -15,12 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.stream.Collectors;
 
 public class SubmitSelectionHandler implements Handler<RoutingContext> {
-
-    private int MAX_DOING_JOBS;
-
-    public SubmitSelectionHandler(int jobs) {
-        MAX_DOING_JOBS = jobs;
-    }
     @Override
     public void handle(RoutingContext event) {
         String uid = event.request().getParam("uid");

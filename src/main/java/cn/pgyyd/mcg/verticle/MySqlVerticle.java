@@ -10,6 +10,7 @@ import cn.pgyyd.mcg.module.MysqlMessage.ExecuteMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.QueryMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.UpdateMessage;
 import cn.pgyyd.mcg.module.UserMessageCodec;
+
 import java.util.TreeMap;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
@@ -20,7 +21,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.sql.SQLConnection;
-
+/**
+ * 这个类提供mysql的连接管理以及数据库请求的控制
+ * @author memetao
+ */
 public class MySqlVerticle extends AbstractVerticle {
     private static int DEFAULT_POOL_SIZE = 10;
     
@@ -113,11 +117,11 @@ public class MySqlVerticle extends AbstractVerticle {
         tasks = new TreeMap<Long,TaskOp>();
         tasks_transaction = new TreeMap<Long,TaskTransaction>();
         
-        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql<QueryMessage>());
-        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql<UpdateMessage>());
-        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql<ExecuteMessage>());
-        vertx.eventBus().registerCodec(new UserMessageCodec.Mysql<CompositeMessage>());
-        
+        vertx.eventBus().registerCodec(new UserMessageCodec.MysqlQuery());
+        vertx.eventBus().registerCodec(new UserMessageCodec.MysqlUpdate());
+        vertx.eventBus().registerCodec(new UserMessageCodec.MysqlExecute());
+        vertx.eventBus().registerCodec(new UserMessageCodec.MysqlComposite());
+
         vertx.eventBus().consumer(EXEC,message->{
             ExecuteMessage mess = (ExecuteMessage) message.body();
             tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,EXEC));
@@ -153,7 +157,7 @@ public class MySqlVerticle extends AbstractVerticle {
             System.out.println("[info] mysql execute:" + op);
              /*获取结果并返回*/
              ExecuteMessage result = new ExecuteMessage(res);
-             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.Mysql().name()));
+             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name()));
             reSchedule(conn);
         });
     }
@@ -162,7 +166,7 @@ public class MySqlVerticle extends AbstractVerticle {
         System.out.println("[info] mysql query:" + op);
         conn.query(op, res->{
             QueryMessage result = new QueryMessage(res);
-            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.Mysql().name()));
+            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name()));
             reSchedule(conn);
         });
     }
@@ -171,7 +175,7 @@ public class MySqlVerticle extends AbstractVerticle {
         System.out.println("[info] mysql update:" + op);
         conn.update(op, res->{
             UpdateMessage result = new UpdateMessage(res);
-            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.Mysql().name()));
+            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name()));
             reSchedule(conn);
         });
     }
@@ -211,7 +215,7 @@ public class MySqlVerticle extends AbstractVerticle {
         
         CompositeFuture.all(new ArrayList<>(futures)).setHandler(res->{
             CompositeMessage result = new CompositeMessage(res);
-            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.Mysql().name()));
+            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlComposite().name()));
             reSchedule(conn);
         });
     }

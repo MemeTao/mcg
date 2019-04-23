@@ -30,4 +30,13 @@ public class McgConst {
     //登录选课系统，token是用户先从别处得到的，选课系统通过uid和token去检验是否合法
     //e.g. www.xxxx.com/login?uid=1400304000&token=f9b447f02d59
     public static String LOGIN_QUERY_PATH = "/login";
+    
+    //一天有几节课
+    public static final int LESSONS_PER_Day = 12;
+    
+    //一周有几天(还是写上吧)
+    public static final int DAYS_PER_WEEK   = 7;
+    
+    //非法课程id
+    public static final int INVALID_COURSE_ID   = -1;
 }
