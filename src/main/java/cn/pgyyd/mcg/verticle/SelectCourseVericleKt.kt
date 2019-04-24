@@ -109,7 +109,7 @@ class SelectCourseVericleKt : CoroutineVerticle() {
             launch {
                 doSelectCourse(task)
             }
-        } else if (emptySeat.size() < config.getInteger("max_doing_jobs")) {
+        } else if (emptySeat.size < config.getInteger("max_doing_jobs")) {
             emptySeat.add(1)
         }
     }
