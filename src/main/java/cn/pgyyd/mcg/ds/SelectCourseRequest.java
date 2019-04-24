@@ -2,13 +2,11 @@ package cn.pgyyd.mcg.ds;
 
 import java.util.ArrayList;
 
-//我就不搞什么bean了，直接public field
 public class SelectCourseRequest {
-    public SelectCourseRequest(int uid, ArrayList<Integer> courses) {
-        UserID = uid;
-        CourseIDs = courses;
+    public SelectCourseRequest(int student_id, ArrayList<Integer> courses) {
+        this.student_id = student_id;
+        this.courses = courses;
     }
-    public int UserID;
-    public ArrayList<Integer> CourseIDs;
-    public int JobID = -1;
+    public int student_id;
+    public ArrayList<Integer> courses;
 }

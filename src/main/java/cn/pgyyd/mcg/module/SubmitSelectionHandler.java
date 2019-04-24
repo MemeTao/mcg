@@ -2,12 +2,13 @@ package cn.pgyyd.mcg.module;
 
 import cn.pgyyd.mcg.constant.McgConst;
 import cn.pgyyd.mcg.ds.SelectCourseRequest;
-import cn.pgyyd.mcg.ds.SelectCourseResult;
+import cn.pgyyd.mcg.module.BussinessMessage.SelectCourseMessage;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
+
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.StringUtils;
@@ -24,13 +25,13 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
             event.fail(400);
             return;
         }
-        List<Long> courseIdList;
+        ArrayList<Integer> courseIdList;
         int userId;
         try {
             userId = Integer.parseInt(uid);
-            courseIdList = Arrays.stream(courseids.split(","))
+            courseIdList = (ArrayList<Integer>) Arrays.stream(courseids.split(","))
                     .filter(s -> !s.isEmpty())
-                    .mapToLong(Long::parseLong)
+                    .mapToInt(Integer::parseInt)
                     .boxed()
                     .collect(Collectors.toList());
         } catch (NumberFormatException e) {
@@ -41,33 +42,20 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
             //unknown exception
             return;
         }
+        //构建选课消息
+        SelectCourseMessage mess = new SelectCourseMessage(new SelectCourseRequest(userId,courseIdList));
+        //事件总线参数（FIXME: static）
+        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.CourseSelect().name());
+        
+        event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, mess,options,res -> {
+            SelectCourseMessage response = (SelectCourseMessage) res.result().body();
+            event.response()
+                    .putHeader("content-type", "application/json")
+                    .end(new JsonObject()
+                            .put("status_code", 1)
+                            .put("job_id", response.response())
+                            .toString());
 
-        event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, new SelectCourseRequest(userId, courseIdList), res -> {
-            SelectCourseResult result = (SelectCourseResult) res.result().body();
-            switch (result.Status) {
-                //处理完成
-                case 0:
-                    JsonArray selectResults = new JsonArray();
-                    for (SelectCourseResult.Result r : result.Results) {
-                        selectResults.add(new JsonObject().put("course", r.CourseID).put("status", r.Success));
-                    }
-                    event.response()
-                            .putHeader("content-type", "application/json")
-                            .end(new JsonObject()
-                                    .put("status_code", 0)
-                                    .put("result", selectResults)
-                                    .toString());
-                    break;
-                //排队选课
-                case 1:
-                    event.response()
-                            .putHeader("content-type", "application/json")
-                            .end(new JsonObject()
-                                    .put("status_code", 1)
-                                    .put("job_id", result.JobID)
-                                    .toString());
-                    break;
-            }
         });
     }
 }
