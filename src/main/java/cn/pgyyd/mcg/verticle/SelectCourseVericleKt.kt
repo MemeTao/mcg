@@ -34,7 +34,7 @@ class SelectCourseVericleKt : CoroutineVerticle() {
         for (i in 1..maxDoingJobs) {
             emptySeat.add(1)
         }
-        mySqlClient = MySQLClient.createShared(vertx, config.getJsonObject("mysql"), "kotlin.sql.poll")
+        mySqlClient = MySQLClient.createShared(vertx, config.getJsonObject("mysql"), "kotlin.sql.pool")
 
         val adapter = vertx.receiveChannelHandler<Message<Any>>()
         vertx.eventBus().consumer<Any>(McgConst.EVENT_BUS_SELECT_COURSE, adapter)
@@ -109,6 +109,8 @@ class SelectCourseVericleKt : CoroutineVerticle() {
             launch {
                 doSelectCourse(task)
             }
+        } else if (emptySeat.size() < config.getInteger("max_doing_jobs")) {
+            emptySeat.add(1)
         }
     }
 
