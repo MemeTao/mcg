@@ -68,7 +68,7 @@ public class MysqlProxy {
      * @param course_ids
      * @param reply  key:课程id  value:该课程的时间
      */
-    public void getCourseSchedule(ArrayList<Integer> course_ids,Handler<AsyncResult<HashMap<Integer,CourseSchedule>>> reply) {
+    public void getCourseSchedule(List<Integer> course_ids,Handler<AsyncResult<HashMap<Integer,CourseSchedule>>> reply) {
         
         HashMap<Integer,CourseSchedule> infos = new HashMap<Integer,CourseSchedule>();
         List<Future<Void>> futures = new ArrayList<Future<Void>>();

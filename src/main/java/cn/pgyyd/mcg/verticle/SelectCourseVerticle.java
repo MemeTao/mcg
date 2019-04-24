@@ -12,6 +12,7 @@ import io.vertx.core.Handler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -55,7 +56,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         }
         private void go() {
             int student_id = task.request.UserID;
-            ArrayList<Integer> courses_wanted = task.request.CourseIDs;
+            List<Integer> courses_wanted = task.request.CourseIDs;
             Future<HashMap<Integer,CourseSchedule>> f_get_courses_schedule = Future.future();
             f_get_courses_schedule.setHandler(res->{
                 if(res.succeeded()) {

@@ -24,13 +24,13 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
             event.fail(400);
             return;
         }
-        List<Long> courseIdList;
+        List<Integer> courseIdList;
         int userId;
         try {
             userId = Integer.parseInt(uid);
             courseIdList = Arrays.stream(courseids.split(","))
                     .filter(s -> !s.isEmpty())
-                    .mapToLong(Long::parseLong)
+                    .mapToInt(Integer::parseInt)
                     .boxed()
                     .collect(Collectors.toList());
         } catch (NumberFormatException e) {
