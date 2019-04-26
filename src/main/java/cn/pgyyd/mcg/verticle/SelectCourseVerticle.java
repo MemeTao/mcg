@@ -2,6 +2,7 @@ package cn.pgyyd.mcg.verticle;
 
 import cn.pgyyd.mcg.ds.CourseSchedule;
 import cn.pgyyd.mcg.ds.SelectCourseRequest;
+import cn.pgyyd.mcg.ds.SelectCourseResponse;
 import cn.pgyyd.mcg.module.MysqlProxy;
 import cn.pgyyd.mcg.module.UserMessageCodec;
 import cn.pgyyd.mcg.module.BussinessMessage.SelectCourseMessage;
@@ -11,6 +12,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.DeliveryOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +53,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         HashMap<Integer,CourseSchedule> courses_schdule = null;
         //该学生课程表(除本次选修课外)
         StudentSchedule student_schdule = null;  
-        //失败有很多种情况，不宜记录
+
         ArrayList<Integer> successed_courses = new ArrayList<Integer>();
         
         public SelectCourseOperator(Task t, Handler<ArrayList<Integer>> h) {
@@ -60,6 +62,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         }
         
         public void go() {
+            System.out.println("[info] select course...");
             int student_id = task.request.student_id;
             ArrayList<Integer> courses_wanted = task.request.courses;
             
@@ -75,12 +78,15 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
             //选课结束时会回调到这里
             f_end.setHandler(res->{
                 //TODO:通知外面已成功的课程id
+               if(res.failed()) {
+                   System.out.println("[warning] select course failed");
+               }
                 handler.handle(successed_courses);
             });
             //1.根据提交的课程id列表去获取这些课程的时间信息,成功后调用f_get_courses_schedule.completer()
             mysqlProxy.getCourseSchedule(courses_wanted,f_get_courses_schedule.completer());
             
-            f_get_courses_schedule.compose(v->{     //操作1完成后，会来到这里 
+            f_get_courses_schedule.compose(v->{     //操作1完成后，会来到这里
                 Future<StudentSchedule> f2 = Future.future();
                 f2.setHandler(res->{
                     if(res.succeeded()) {
@@ -100,17 +106,17 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                     TreeMap<Integer,ArrayList<Integer>>  schedule_day = course_schedule.lesson(); 
                     boolean conflict = false;
                     //遍历每一天
-                    for(Entry<Integer,ArrayList<Integer>> item : schedule_day.entrySet()) {  
+                    for(Entry<Integer,ArrayList<Integer>> item : schedule_day.entrySet()) {
                         int day = item.getKey();  
-                        ArrayList<Integer> lessons = item.getValue(); 
+                        ArrayList<Integer> lessons = item.getValue();
                         //如果该学生的课表与这个时间段冲突
-                        if(student_schdule.exsit(day, lessons)) { 
+                        if(student_schdule.exsit(day, lessons)) {
                             conflict = true;
                             break;
                         }
                     }
                     //如果这门课的时间安排和该学生的所有课程都不冲突
-                    if(!conflict) {  
+                    if(!conflict) {
                         valid_course_ids.add(entry.getKey());
                     }
                 }
@@ -150,7 +156,8 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         
         vertx.eventBus().consumer(SELECT, message->{
             SelectCourseMessage mess = (SelectCourseMessage) message.body();
-            
+            System.out.println("[info] select course verticle recived mess,student id " 
+                                + mess.request().student_id + ",courses list:" + mess.request().courses);
             final long job_id = JobIDGenerator.getInstance().generate();
             final long seq = seq_generator ++;
             Task task =  new Task(mess.request(), seq, job_id);
@@ -158,7 +165,9 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
             set_task_status(task,Task.ING,res->{
                 if(res) {
                     /*也可以立即返回，这时候如果客户端立即去查询redis可能还没有记录*/
-                    message.reply(task.job_id);   
+                    SelectCourseMessage response = new SelectCourseMessage(new SelectCourseResponse(task.job_id));
+                    DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.CourseSelect().name());
+                    message.reply(response,options);
                 }else {
                     //不作任何回应，事件总线超时自动失败(或者返回一个非法job_id标识失败)
                     if(jobs.containsKey(task.sequence)) {
@@ -179,13 +188,16 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         Task t = jobs.get(key);
         doSelectCourse(t,res->{
             /*FIXME:选课结果可能是部分成功，在redis中需要另外一个地方来记录已成功课程s*/
-            jobs.remove(key);
             set_task_status(t,Task.DONE ,r->{
-                if(!r) {
+                if(res.size() == 0 ) {
                     //做不了任何事情，打日志就可以了
                     //客户端的行为：轮询失败，下次页面更新的时候才能看到他自己的选课记录
+                    System.out.println("[waring] misson failed!");
                 }
             });
+            if(jobs.containsKey(key)) {
+                jobs.remove(key);
+            }
             schedule();
         });
     }

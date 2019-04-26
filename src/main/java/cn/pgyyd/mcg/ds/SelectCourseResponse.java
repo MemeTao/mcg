@@ -6,4 +6,7 @@ public class SelectCourseResponse {
     public SelectCourseResponse(long id) {
         job_id = id;
     }
+    public long job_id() {
+        return job_id;
+    }
 }

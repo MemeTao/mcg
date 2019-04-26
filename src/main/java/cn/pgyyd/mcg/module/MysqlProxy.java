@@ -42,6 +42,63 @@ public class MysqlProxy {
     
     private Vertx vertx;
     
+    private class Failed<T> implements  AsyncResult<T>{
+        @Override
+        public T result() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+        @Override
+        public Throwable cause() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public boolean succeeded() {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public boolean failed() {
+            // TODO Auto-generated method stub
+            return !succeeded();
+        }
+        ;
+    }
+    private class Success<T> implements  AsyncResult<T>{
+        
+        private T t1;
+        
+        public  Success(T t){
+            this.t1 = t;
+        }
+        @Override
+        public T result() {
+            // TODO Auto-generated method stub
+            return t1;
+        }
+        @Override
+        public Throwable cause() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public boolean succeeded() {
+            // TODO Auto-generated method stub
+            return t1 != null;
+        }
+
+        @Override
+        public boolean failed() {
+            // TODO Auto-generated method stub
+            return !succeeded();
+        }
+        ;
+    }
+    
     public MysqlProxy(Vertx v){
         vertx = v;
     }
@@ -77,7 +134,7 @@ public class MysqlProxy {
             Future<Void> f =  Future.future();
             futures.add(f);
             query(sql,res->{
-                if( res.succeeded() ) { 
+                if( res != null && res.succeeded() ) {
                     ResultSet result = res.result();
                     CourseSchedule course = new CourseSchedule(course_id);
                     infos.put(course_id, course);
@@ -98,8 +155,12 @@ public class MysqlProxy {
             });
         }
         CompositeFuture.all(new ArrayList<>(futures)).setHandler(res->{
-            /*TODO:需要将infos封装一个asyncresult*/
-            reply.handle(null);
+            if(res.failed()) {
+                reply.handle(new Failed<HashMap<Integer,CourseSchedule>>());
+            }else {
+                /*TODO:需要将infos封装一个asyncresult*/
+                reply.handle(new Success<HashMap<Integer,CourseSchedule>>(infos));
+            }
         });
     }
     /**
@@ -154,8 +215,12 @@ public class MysqlProxy {
     
     public void query(String op,Handler<AsyncResult<ResultSet>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.QueryMessage>>> handler = res ->{
-            AsyncResult<ResultSet> result = res.result().body().result();
-            reply.handle(result);
+            if(res.succeeded()) {
+                AsyncResult<ResultSet> result = res.result().body().result();
+                reply.handle(result);
+            }else {
+                reply.handle(new Failed<ResultSet>());
+            }
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name());
         vertx.eventBus().send(QUERY,new MysqlMessage.QueryMessage(op),options,handler);

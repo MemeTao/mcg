@@ -165,6 +165,9 @@ public class MySqlVerticle extends AbstractVerticle {
     private <T> void query(SQLConnection conn,String op,Message<T> message) {
         System.out.println("[info] mysql query:" + op);
         conn.query(op, res->{
+            if(res.failed()) {
+                System.out.println("quer failed");
+            }
             QueryMessage result = new QueryMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name()));
             reSchedule(conn);

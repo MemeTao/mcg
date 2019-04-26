@@ -33,7 +33,7 @@ public class Main {
 
                         vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions);
                         vertx.deployVerticle(MySqlVerticle.class.getName());
-                        vertx.deployVerticle(RedisClientVerticle.class.getName());
+                        //vertx.deployVerticle(RedisClientVerticle.class.getName());
                     }
                 });
             }
