@@ -20,7 +20,7 @@ CREATE TABLE `tb_student_course` (
     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
     `student` int(11) NOT NULL COMMENT '学生id',
     `course` int(11) NOT NULL COMMENT '课程id',
-    PRIMARY KEY (`id),
+    PRIMARY KEY (`id`),
     UNIQUE KEY (`student`, `course`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '学生选课表';
 
