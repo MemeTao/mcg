@@ -3,7 +3,7 @@ use mcg;
 
 
 CREATE TABLE `tb_student` (
-    `id` int(11) NOT NULL AUTO_INCREAMENT COMMENT '主键',
+    `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
     `student_name` varchar(50) NOT NULL COMMENT '学生姓名',
     PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT '学生表';

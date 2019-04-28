@@ -1,8 +1,8 @@
 package cn.pgyyd.mcg.verticle
 
 import cn.pgyyd.mcg.constant.McgConst
+import cn.pgyyd.mcg.ds.SelectCourseRequest
 import cn.pgyyd.mcg.ds.SelectCourseResult
-import cn.pgyyd.mcg.ds.StudentSchedule
 import cn.pgyyd.mcg.singleton.JobIDGenerator
 import io.vertx.core.eventbus.Message
 import io.vertx.ext.asyncsql.AsyncSQLClient
@@ -16,10 +16,9 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class Task(var msg: Message<Any>, var jobid: kotlin.Long) {
-}
+data class Task(var msg: Message<SelectCourseRequest>, var jobid: Long)
 
-data class CourseSchedule(val course: Int, val week: Int, val day: Int, val section: Int) : Comparable<CourseSchedule> {
+data class CourseSchedule(val course: Long, val week: Int, val day: Int, val section: Int) : Comparable<CourseSchedule> {
     override fun compareTo(other: CourseSchedule): Int {
         return when {
             this.week != other.week -> this.week  - other.week
@@ -34,7 +33,7 @@ class SelectCourseVericleKt : CoroutineVerticle() {
 
     private lateinit var mySqlClient : AsyncSQLClient
 
-    private var emptySeat = ArrayDeque<kotlin.Int?>()
+    private var emptySeat = ArrayDeque<Int?>()
 
     private var jobQueue = ArrayDeque<Task>()
 
@@ -45,8 +44,8 @@ class SelectCourseVericleKt : CoroutineVerticle() {
         }
         mySqlClient = MySQLClient.createShared(vertx, config.getJsonObject("mysql"), "kotlin.sql.pool")
 
-        val adapter = vertx.receiveChannelHandler<Message<Any>>()
-        vertx.eventBus().consumer<Any>(McgConst.EVENT_BUS_SELECT_COURSE, adapter)
+        val adapter = vertx.receiveChannelHandler<Message<SelectCourseRequest>>()
+        vertx.eventBus().consumer<SelectCourseRequest>(McgConst.EVENT_BUS_SELECT_COURSE, adapter)
         launch {
             while (true) {
                 val msg = adapter.receive()
@@ -77,7 +76,7 @@ class SelectCourseVericleKt : CoroutineVerticle() {
         //6. 退出
         var finalResult = SelectCourseResult(0, task.jobid)
         val mysqlConn = mySqlClient.getConnectionAwait()
-        val studentCourseSqlResult = mysqlConn.queryAwait(makeStudentScheduleSQL(1/*学生uid*/)).results  //学生自己的课表
+        val studentCourseSqlResult = mysqlConn.queryAwait(makeStudentScheduleSQL(task.msg.body().UserID)).results  //学生自己的课表
         val sortedStudentCourseSchedule: List<CourseSchedule>
         if (studentCourseSqlResult.size == 0) {
             //获取学生课表失败
@@ -94,7 +93,7 @@ class SelectCourseVericleKt : CoroutineVerticle() {
             //从studentCourseSqlResult提取课表信息，主要是上课时间
             var studentCourseSchedule = ArrayList<CourseSchedule>()
             for (row in studentCourseSqlResult) {
-                val course = row.getInteger(0)
+                val course = row.getLong(0)
                 val week = row.getInteger(1)
                 val day = row.getInteger(2)
                 val section = row.getInteger(3)
@@ -103,13 +102,13 @@ class SelectCourseVericleKt : CoroutineVerticle() {
             sortedStudentCourseSchedule = studentCourseSchedule.sorted()
         }
 
-        val courseTimeSqlResult = mysqlConn.queryAwait(makeCourseTimeSQL(ArrayList<Int>()/**/)).results          //所选课程的信息，主要是上课时间
-        val toSelectCoursesSchedule = HashMap<Int, MutableList<CourseSchedule>>()
+        val courseTimeSqlResult = mysqlConn.queryAwait(makeCourseTimeSQL(task.msg.body().CourseIDs)).results          //所选课程的信息，主要是上课时间
+        val toSelectCoursesSchedule = HashMap<Long, MutableList<CourseSchedule>>()
         for (row in courseTimeSqlResult) {
             //等价于 toSelectCoursesSchedule[course_id].push_back(course)
-            toSelectCoursesSchedule.getOrDefault(row.getInteger(0), ArrayList<CourseSchedule>())
+            toSelectCoursesSchedule.getOrDefault(row.getLong(0), ArrayList())
                     .add(CourseSchedule(
-                            row.getInteger(0),
+                            row.getLong(0),
                             row.getInteger(1),
                             row.getInteger(2),
                             row.getInteger(3)))
@@ -132,6 +131,17 @@ class SelectCourseVericleKt : CoroutineVerticle() {
         val sortedCourseSchedule = courseSchedule.sorted()
         //TODO: 匹配时间
         //学生课表和要选的课课表，数据结构一致，并且按相同方式排序好了，O(N)就能匹配出结果
+        var i = 0
+        var j = 0
+        while (i < studentSchedule.size && j < sortedCourseSchedule.size) {
+            val compare = studentSchedule[i].compareTo(sortedCourseSchedule[j])
+            when {
+                compare < 0 -> i++
+                compare > 0 -> j++
+                else -> return false
+            }
+        }
+        return true
     }
 
     private fun tryPollJobQueue() {
@@ -150,15 +160,14 @@ class SelectCourseVericleKt : CoroutineVerticle() {
 // some helper function
 private fun makeStudentScheduleSQL(uid: Int) : String {
     return """SELECT b.course_id, b.week, b.day_of_week, b.section_of_day
-        | FROM tb_student_course a, tb_course_schedule b
-        | WHERE a.course = b.course_id AND a.student = $uid""".trimMargin()
+ FROM tb_student_course a, tb_course_schedule b
+ WHERE a.course = b.course_id AND a.student = $uid"""
 }
 
 private fun makeCourseTimeSQL(uids: List<Int>) : String {
     val builder = StringBuilder("""SELECT course_id, week, day_of_week, section_of_day
-        | FROM tb_course_schedule
-        | WHERE course_id IN (
-    """)
+ FROM tb_course_schedule
+ WHERE course_id IN (""")
     for (i in 0..uids.size) {
         if (i == 0) {
             builder.append(uids[i])
