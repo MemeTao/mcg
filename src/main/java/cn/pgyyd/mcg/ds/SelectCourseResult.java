@@ -3,6 +3,7 @@ package cn.pgyyd.mcg.ds;
 import java.util.List;
 
 //TODO: 完善选课结果的逻辑，如部分成功选课
+@Deprecated
 public class SelectCourseResult {
     public class Result {
         public Result() {}

@@ -1,8 +1,7 @@
 package cn.pgyyd.mcg.module;
 
 import cn.pgyyd.mcg.constant.McgConst;
-import cn.pgyyd.mcg.ds.SelectCourseRequest;
-import cn.pgyyd.mcg.ds.SelectCourseResult;
+import cn.pgyyd.mcg.ds.SelectCourseMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -42,14 +41,16 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
             return;
         }
 
-        event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, new SelectCourseRequest(userId, courseIdList), res -> {
-            SelectCourseResult result = (SelectCourseResult) res.result().body();
-            switch (result.Status) {
+        SelectCourseMessage msg = new SelectCourseMessage();
+        msg.request = msg.new SelectCourseRequest(userId, courseIdList);
+        event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, msg, res -> {
+            SelectCourseMessage replyMsg = (SelectCourseMessage) res.result().body();
+            switch (replyMsg.result.Status) {
                 //处理完成
                 case 0:
                     JsonArray selectResults = new JsonArray();
-                    for (SelectCourseResult.Result r : result.Results) {
-                        selectResults.add(new JsonObject().put("course", r.CourseID).put("status", r.Success));
+                    for (SelectCourseMessage.Result r : replyMsg.result.Results) {
+                        selectResults.add(new JsonObject().put("course", r.courseID).put("status", r.success));
                     }
                     event.response()
                             .putHeader("content-type", "application/json")
@@ -64,7 +65,7 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                             .putHeader("content-type", "application/json")
                             .end(new JsonObject()
                                     .put("status_code", 1)
-                                    .put("job_id", result.JobID)
+                                    .put("job_id", replyMsg.request.jobID)
                                     .toString());
                     break;
             }

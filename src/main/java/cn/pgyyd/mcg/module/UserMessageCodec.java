@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import cn.pgyyd.mcg.ds.SelectCourseMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.CompositeMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.ExecuteMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.QueryMessage;
@@ -262,6 +263,52 @@ public class UserMessageCodec{
          * 用于识别是否是用户编码器
          * 自定义编解码器通常使用-1
          */
+        @Override
+        public byte systemCodecID() {
+            return -1;
+        }
+    }
+
+    static public class SelectCourseMessageCodec implements MessageCodec<SelectCourseMessage, SelectCourseMessage> {
+        //
+
+        @Override
+        public void encodeToWire(Buffer buffer, SelectCourseMessage selectCourseMessage) {
+            final ByteArrayOutputStream b = new ByteArrayOutputStream();
+            ObjectOutputStream o;
+            try {
+                o = new ObjectOutputStream(b);
+                o.writeObject(selectCourseMessage);
+                o.close();
+                buffer.appendBytes(b.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public SelectCourseMessage decodeFromWire(int pos, Buffer buffer) {
+            final ByteArrayInputStream b = new ByteArrayInputStream(buffer.getBytes());
+            SelectCourseMessage msg = null;
+            try {
+                ObjectInputStream o = new ObjectInputStream(b);
+                msg = (SelectCourseMessage) o.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            return  msg;
+        }
+
+        @Override
+        public SelectCourseMessage transform(SelectCourseMessage selectCourseMessage) {
+            return selectCourseMessage;
+        }
+
+        @Override
+        public String name() {
+            return this.getClass().getName();
+        }
+
         @Override
         public byte systemCodecID() {
             return -1;

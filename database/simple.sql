@@ -10,7 +10,7 @@ CREATE TABLE `tb_student` (
 
 CREATE TABLE `tb_course` (
     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `copacity` int(11) NOT NULL COMMENT '课程容量',
+    `capacity` int(11) NOT NULL COMMENT '课程容量',
     `students` int(11) NOT NULL COMMENT '已选人数',
     `course_name` varchar(50) NOT NULL COMMENT '课程名称',
     PRIMARY KEY (`id`)
