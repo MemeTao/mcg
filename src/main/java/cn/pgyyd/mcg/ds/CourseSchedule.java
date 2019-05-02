@@ -6,7 +6,7 @@ import java.util.TreeMap;
 import cn.pgyyd.mcg.constant.McgConst;
 
 /**
- * 课程时间信息,这样写的目的是为了占用内存少一点
+ * 课程时间信息
  * @author memetao
  *
  */
@@ -15,9 +15,8 @@ public class CourseSchedule {
     
     private static final int DAYS_PER_WEEK = McgConst.DAYS_PER_WEEK;
     
-    private static final int bytes = (LESSONS_PER_Day * DAYS_PER_WEEK + 8) >> 3;
-    
-    private int bitmap[] = new int[bytes];  
+    //FIXME: 以后使用位图的方式减小内存占用
+    private boolean bitmap[] = new boolean[LESSONS_PER_Day * DAYS_PER_WEEK];  
     
     private long course_id ;
     
@@ -37,8 +36,7 @@ public class CourseSchedule {
             if(lesson > LESSONS_PER_Day || lesson <= 0) {
                 continue;
             }else {
-                int bit = (day-1) * LESSONS_PER_Day + lesson - 1;
-                bitmap[bit >> 3] |= (0x01 << (bit % 8));
+                bitmap[day * LESSONS_PER_Day + lesson -1] = true;
             }
         }
     }
@@ -49,6 +47,9 @@ public class CourseSchedule {
      */
     public void add_info(final int day, int lesson_start,int lesson_end) {
         int [] lessons = new int[lesson_end - lesson_start + 1];
+        for(int i = lesson_start, j = 0 ;i <= lesson_end; i++) {
+            lessons[j++] = i;
+        }
         add_info(day,lessons);
     }
     /**
@@ -74,29 +75,21 @@ public class CourseSchedule {
      * @return
      */
     public boolean exsit(final int day,final int lesson) {
-        int bit = (day-1) * LESSONS_PER_Day + lesson - 1;
-        int ret =  bitmap[bit >> 3] & (0x01 << (bit % 8)) ;
-        return ret != 0;
+        return bitmap[day * LESSONS_PER_Day + lesson -1] == true;
     }
     /**
      * 
-     * @return KEY：周几   value：第几节
+     * @return KEY：周几   value：哪几节
      */
     public TreeMap<Integer,ArrayList<Integer>> lesson(){
         TreeMap<Integer,ArrayList<Integer>> courses = new TreeMap<Integer,ArrayList<Integer>>();
-        for(int i = 0 ;i < bytes ; i++) {
-            int day = i * 8 / LESSONS_PER_Day + 1;
-            for(int j = 0 ;i < 8 ; j++) {
-                if((bitmap[i] & (0x01 << j)) != 0) {
-                    int lesson = (i+1) * 8 + j + 1 - day * LESSONS_PER_Day;
-                    if(courses.containsKey(day)) {
-                        courses.get(day).add(lesson);
-                    }else {
-                        ArrayList<Integer> lessons = new ArrayList<Integer>();
-                        lessons.add(lesson);
-                        courses.put(day, lessons);
-                    }
-                }
+        for(int day = 1 ;day <= DAYS_PER_WEEK ; day ++) {
+            ArrayList<Integer> lessons = new ArrayList<Integer>();
+            for(int lesson = 1 ; lesson <= LESSONS_PER_Day ; lesson ++) {
+                lessons.add(lesson);
+            }
+            if(lessons.size() > 0) {
+                courses.put(day, lessons);
             }
         }
         return courses;

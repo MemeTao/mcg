@@ -127,12 +127,18 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                     Future<Void> f = Future.future();
                     fs.add(f);
                     //4. 对该门课的剩余人数进行更新
-                    mysqlProxy.updateRemain(course_id, res->{
+                    //FIXME：这里也许需要用事务保证
+                    mysqlProxy.updateRemain(course_id, 1,res->{
                         if(res.succeeded()) {
-                            //往该学生课表中增加课程记录(添加结束再返回成功，防止该学生瞬间提交两次相同的课程)
+                            //往该学生课表中增加课程记录
+                            //FIXME:这个操作或许需要分布式锁
                             mysqlProxy.addElectiveCourse(student_id,course_id,res_add->{
                                 if(res_add.succeeded()) {
                                     successed_courses.add(course_id);  //直到这里才算成功
+                                }else {
+                                    mysqlProxy.updateRemain(course_id, -1,res_dec->{
+                                        //不可能失败，除非数据库死了
+                                    });
                                 }
                             });
                         }

@@ -25,6 +25,13 @@ public class StudentSchedule {
             }
         }
     }
+    /**
+     * 导入xx课程
+     * @param course
+     */
+    public void import_course(CourseSchedule course) {
+        ;
+    }
     
     public void add_info(final int day,int lesson,int course_id) {
         if(day <= DAYS_PER_WEEK && day > 0 &&
@@ -52,6 +59,7 @@ public class StudentSchedule {
         }
         return ret;
     }
+    
     public HashMap<Integer,ArrayList<Integer>> lessons() {
         return null;
     }

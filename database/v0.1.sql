@@ -1,3 +1,17 @@
+
+drop TABLE mcg_institute;
+drop TABLE mcg_major;
+drop TABLE mcg_class;
+drop TABLE mcg_user;
+drop TABLE mcg_user_student;
+drop TABLE mcg_user_teacher;
+drop TABLE mcg_course;
+drop TABLE mcg_course_basic;
+drop TABLE mcg_course_remain;
+drop TABLE mcg_course_timerange;
+drop TABLE mcg_student_course;
+drop TABLE mcg_student_course_relation;
+
 -- 选课系统
 -- 学院
 CREATE TABLE `mcg_institute` (
@@ -98,6 +112,15 @@ CREATE TABLE `mcg_course_timerange` (
   KEY `idx_day` (`day`),
   KEY `idx_start_end` (`start`,`end`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '课程时间表';
+
+-- 学生-课程 关系表，每条记录代表x学生选择了（拥有了）这个课
+CREATE TABLE `mcg_student_course` (
+    `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `student` int(11) NOT NULL COMMENT '学生id',
+    `course` int(11) NOT NULL COMMENT '课程id',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY (`student`, `course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '学生课表(已有)';
 
 -- 学生选课信息
 CREATE TABLE `mcg_student_course_relation` (

@@ -182,6 +182,7 @@ public class MySqlVerticle extends AbstractVerticle {
             reSchedule(conn);
         });
     }
+    
     /**
      * @param <T>
      * @param conn  分配到的数据库连接
