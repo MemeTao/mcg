@@ -151,15 +151,16 @@ public class MysqlProxy {
                             course.add_info(day, start,end);
                         }
                     }
+                    f.complete();
+                }else {
+                    f.fail("getCourseSchedule failed");
                 }
-                f.complete();
             });
         }
         CompositeFuture.all(new ArrayList<>(futures)).setHandler(res->{
             if(res.failed()) {
                 reply.handle(new Failed<HashMap<Integer,CourseSchedule>>());
             }else {
-                /*TODO:需要将infos封装一个asyncresult*/
                 reply.handle(new Success<HashMap<Integer,CourseSchedule>>(infos));
             }
         });
@@ -194,7 +195,7 @@ public class MysqlProxy {
         /*TODO:同上*/
         StudentSchedule infos = new StudentSchedule(student_id);
         //获取该学生有哪些课程
-        String sql = "select course from tb_student_course where student = " + student_id;
+        String sql = "select courseId from mcg_student_course where studentId = " + student_id;
         query(sql,res->{
             if( res != null && res.succeeded() ) {
                 ResultSet result = res.result();
@@ -207,7 +208,7 @@ public class MysqlProxy {
                     getCourseSchedule(course_id,course_res->{
                         if(course_res.succeeded()) {
                             CourseSchedule courses_schedule = course_res.result();
-                            infos.import_course(courses_schedule);
+                            infos.add_course(courses_schedule);
                             f.complete();
                         }else {
                             f.fail("getCourseSchedule failed");
@@ -215,8 +216,9 @@ public class MysqlProxy {
                     });
                 }
                 CompositeFuture.all(new ArrayList<>(fs)).setHandler(r->{
-                    if(r.succeeded())
+                    if(r.succeeded()) {
                         reply.handle(new Success<StudentSchedule>(infos));
+                    }
                     else{
                         reply.handle(new Failed<StudentSchedule>());
                     }
@@ -236,13 +238,13 @@ public class MysqlProxy {
         /*TODO:同上*/
         String sql = new String();
         if(num < 0) {
+            num = -num;
             sql = "update mcg_course_remain set remain = remain - " + num
-                                + "where courseId = " + course_id +
-                                  "and remain > 0";
+                                + " where courseId = " + course_id +
+                                  " and remain > 0";
         }else {
             sql = "update mcg_course_remain set remain = remain + " + num
-                    + "where courseId = " + course_id +
-                      "and remain > 0";
+                    + " where courseId = " + course_id ;
         }
         update(sql,res->{
             if(res.succeeded()) {
@@ -251,7 +253,6 @@ public class MysqlProxy {
                 reply.handle(new Failed<Boolean>());
             }
         });
-        reply.handle(null);
     }
     /**
      * 向某学生的选课课课表中，增加信息
@@ -262,10 +263,10 @@ public class MysqlProxy {
     public void addElectiveCourse(int student_id,int course_id,Handler<AsyncResult<Boolean>> reply) {
         /*TODO:同上*/
         String sql = "insert into mcg_student_course "
-                + "( student ,"
-                + "  coourse )"
-                +    "values"
-                +                "( " 
+                + "(studentId,"
+                + "courseId)"
+                +  " values "
+                +                "(" 
                 +   student_id +  "," 
                 +   course_id +  ")";
         

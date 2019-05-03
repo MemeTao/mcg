@@ -1,89 +1,7 @@
-
-drop TABLE mcg_institute;
-drop TABLE mcg_major;
-drop TABLE mcg_class;
-drop TABLE mcg_user;
-drop TABLE mcg_user_student;
-drop TABLE mcg_user_teacher;
 drop TABLE mcg_course;
-drop TABLE mcg_course_basic;
 drop TABLE mcg_course_remain;
 drop TABLE mcg_course_timerange;
 drop TABLE mcg_student_course;
-drop TABLE mcg_student_course_relation;
-
--- 选课系统
--- 学院
-CREATE TABLE `mcg_institute` (
-  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `name` varchar(50) NOT NULL COMMENT '名称',
-  PRIMARY KEY (`id`),
-  KEY `idx_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '学院表';
-
--- 专业
-CREATE TABLE `mcg_major` (
-  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `instituteId` int(20) NOT NULL COMMENT '学院id',
-  `name` varchar(50) NOT NULL COMMENT '名称',
-  PRIMARY KEY (`id`),
-  KEY `idx_instituteId` (`instituteId`),
-  KEY `idx_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '专业表';
-
--- 班级
-CREATE TABLE `mcg_class` (
-  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `majorId` int(20) NOT NULL COMMENT '专业id',
-  `number` int(20) NOT NULL COMMENT '序号',
-  PRIMARY KEY (`id`),
-  KEY `idx_majorId` (`majorId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '班级表';
-
--- 用户
-CREATE TABLE `mcg_user` (
-  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `number` varchar(50) NOT NULL COMMENT '学号/工号',
-  `password` varchar(50) NOT NULL COMMENT '密码',
-  `type` int(4) NOT NULL DEFAULT '0' COMMENT '用户类型：0学生 1老师',
-  `name` varchar(50) NOT NULL COMMENT '姓名',
-  PRIMARY KEY (`id`),
-  KEY `idx_number` (`number`),
-  KEY `idx_type` (`type`),
-  KEY `idx_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户表';
-
--- 学生
-CREATE TABLE `mcg_user_student` (
-  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `userId` int(20) NOT NULL COMMENT '用户id',
-  `classId` int(20) NOT NULL COMMENT '班级id',
-  PRIMARY KEY (`id`),
-  KEY `idx_userId` (`userId`),
-  KEY `idx_classId` (`classId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '学生表';
-
--- 老师
-CREATE TABLE `mcg_user_teacher` (
-  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `userId` int(20) NOT NULL COMMENT '用户id',
-  `instituteId` int(20) NOT NULL COMMENT '学院id',
-  PRIMARY KEY (`id`),
-  KEY `idx_userId` (`userId`),
-  KEY `idx_instituteId` (`instituteId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '老师表';
-
--- 课程基本信息
-CREATE TABLE `mcg_course_basic` (
-  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `courseId` int(20) NOT NULL COMMENT '课程id',
-  `code` varchar(50) NOT NULL COMMENT '编码',
-  `name` int(20) NOT NULL COMMENT '名称',
-  `time` int(20) NOT NULL COMMENT '时长',
-  PRIMARY KEY (`id`),
-  KEY `idx_code` (`code`),
-  KEY `idx_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '课程基本信息表';
 
 -- 课程
 CREATE TABLE `mcg_course` (
@@ -116,21 +34,12 @@ CREATE TABLE `mcg_course_timerange` (
 -- 学生-课程 关系表，每条记录代表x学生选择了（拥有了）这个课
 CREATE TABLE `mcg_student_course` (
     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
-    `student` int(11) NOT NULL COMMENT '学生id',
-    `course` int(11) NOT NULL COMMENT '课程id',
+    `studentId` int(11) NOT NULL COMMENT '学生id',
+    `courseId` int(11) NOT NULL COMMENT '课程id',
     PRIMARY KEY (`id`),
-    UNIQUE KEY (`student`, `course`)
+    UNIQUE KEY (`studentId`, `courseId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '学生课表(已有)';
 
--- 学生选课信息
-CREATE TABLE `mcg_student_course_relation` (
-  `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `studentId` int(20) NOT NULL COMMENT '学生id',
-  `courseId` int(20) NOT NULL COMMENT '课程id',
-  PRIMARY KEY (`id`),
-  KEY `idx_studentId` (`studentId`),
-  KEY `idx_courseId` (`courseId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '学生选课信息表';
 
 -- 选课中课程信息
 CREATE TABLE `mcg_course_remain` (

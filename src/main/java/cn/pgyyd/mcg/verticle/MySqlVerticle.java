@@ -166,7 +166,7 @@ public class MySqlVerticle extends AbstractVerticle {
         System.out.println("[info] mysql query:" + op);
         conn.query(op, res->{
             if(res.failed()) {
-                System.out.println("quer failed");
+                System.out.println("[error] query failed");
             }
             QueryMessage result = new QueryMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name()));

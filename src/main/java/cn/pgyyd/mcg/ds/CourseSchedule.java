@@ -18,10 +18,14 @@ public class CourseSchedule {
     //FIXME: 以后使用位图的方式减小内存占用
     private boolean bitmap[] = new boolean[LESSONS_PER_Day * DAYS_PER_WEEK];  
     
-    private long course_id ;
+    private int course_id ;
     
-    public CourseSchedule(long course_id){
+    public CourseSchedule(int course_id){
         this.course_id = course_id;
+    }
+    
+    public int courseId() {
+        return course_id;
     }
     /**这个函数只要保证正确就行了，可读性无所谓
      * @param day     周几(1-7)
@@ -36,7 +40,7 @@ public class CourseSchedule {
             if(lesson > LESSONS_PER_Day || lesson <= 0) {
                 continue;
             }else {
-                bitmap[day * LESSONS_PER_Day + lesson -1] = true;
+                bitmap[(day-1) * LESSONS_PER_Day + lesson -1] = true;
             }
         }
     }
@@ -47,8 +51,8 @@ public class CourseSchedule {
      */
     public void add_info(final int day, int lesson_start,int lesson_end) {
         int [] lessons = new int[lesson_end - lesson_start + 1];
-        for(int i = lesson_start, j = 0 ;i <= lesson_end; i++) {
-            lessons[j++] = i;
+        for(int i = lesson_start, j = 0 ;i <= lesson_end; i++,j++) {
+            lessons[j] = i;
         }
         add_info(day,lessons);
     }
@@ -60,8 +64,8 @@ public class CourseSchedule {
     public boolean exsit(final int day) {
         boolean ret = false;
         /*FIXME: 换种更高效的实现*/
-        for(int i = 0 ;i < LESSONS_PER_Day ;i ++) {
-            if(exsit(day,i+1)) {
+        for(int i = 1 ;i <= LESSONS_PER_Day ;i ++) {
+            if(exsit(day,i)) {
                 ret = true;
                 break;
             }
@@ -75,23 +79,42 @@ public class CourseSchedule {
      * @return
      */
     public boolean exsit(final int day,final int lesson) {
-        return bitmap[day * LESSONS_PER_Day + lesson -1] == true;
+        return bitmap[(day-1) * LESSONS_PER_Day + lesson -1] == true;
     }
     /**
      * 
      * @return KEY：周几   value：哪几节
      */
-    public TreeMap<Integer,ArrayList<Integer>> lesson(){
+    public TreeMap<Integer,ArrayList<Integer>> lessons(){
         TreeMap<Integer,ArrayList<Integer>> courses = new TreeMap<Integer,ArrayList<Integer>>();
         for(int day = 1 ;day <= DAYS_PER_WEEK ; day ++) {
             ArrayList<Integer> lessons = new ArrayList<Integer>();
             for(int lesson = 1 ; lesson <= LESSONS_PER_Day ; lesson ++) {
-                lessons.add(lesson);
+                if(exsit(day,lesson)) {
+                    lessons.add(lesson);
+                }
             }
             if(lessons.size() > 0) {
                 courses.put(day, lessons);
             }
         }
         return courses;
+    }
+    
+    public String dump() {
+        String str = new String();
+        str = "course(" + course_id + ") schedule: \n";
+        for(int i = 1 ;i <= DAYS_PER_WEEK ; i++) {
+            if(exsit(i)) {
+                str += "day(" + i + "):";
+                for(int j = 1 ;j <= LESSONS_PER_Day ; j++) {
+                    if(exsit(i,j)) {
+                        str += j + " ";
+                    }
+                }
+                str += "\n";
+            }
+        }
+        return str;
     }
 }
