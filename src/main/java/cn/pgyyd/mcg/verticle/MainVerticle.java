@@ -2,10 +2,7 @@ package cn.pgyyd.mcg.verticle;
 
 import cn.pgyyd.mcg.auth.CjluAuth;
 import cn.pgyyd.mcg.constant.McgConst;
-import cn.pgyyd.mcg.module.CheckSelectionResultHandler;
-import cn.pgyyd.mcg.module.CourseInfoHandler;
-import cn.pgyyd.mcg.module.LoginHandler;
-import cn.pgyyd.mcg.module.SubmitSelectionHandler;
+import cn.pgyyd.mcg.module.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;

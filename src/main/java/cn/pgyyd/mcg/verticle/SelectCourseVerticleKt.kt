@@ -18,6 +18,12 @@ import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import cn.pgyyd.mcg.interfaces.Test
+import io.vertx.core.eventbus.DeliveryOptions
+import lombok.extern.slf4j.Slf4j
+import org.apache.log4j.Logger
+import org.slf4j.LoggerFactory
+
 
 data class CourseSchedule(val course: Long, val week: Int, val day: Int, val section: Int) : Comparable<CourseSchedule> {
     override fun compareTo(other: CourseSchedule): Int {
@@ -30,7 +36,9 @@ data class CourseSchedule(val course: Long, val week: Int, val day: Int, val sec
     }
 }
 
-class SelectCourseVericleKt : CoroutineVerticle() {
+class SelectCourseVerticleKt : CoroutineVerticle() {
+
+    val log = LoggerFactory.getLogger(SelectCourseVerticleKt::class.java)
 
     private lateinit var mySqlClient : AsyncSQLClient
 
@@ -38,12 +46,16 @@ class SelectCourseVericleKt : CoroutineVerticle() {
 
     private var jobQueue = ArrayDeque<Message<SelectCourseMessage>>()
 
+    val deliveryOptions = DeliveryOptions().setCodecName(UserMessageCodec.SelectCourseMessageCodec().name())
+
     override suspend fun start() {
+        log.debug("start SelectCourseVerticleKt")
         val maxDoingJobs = config.getInteger("max_doing_jobs")
-        for (i in 1..maxDoingJobs) {
+        for (i in 1 until maxDoingJobs) {
             emptySeat.add(1)
         }
         mySqlClient = MySQLClient.createShared(vertx, config.getJsonObject("mysql"), "kotlin.sql.pool")
+        log.debug("mySqlClient started")
 
         vertx.eventBus().registerCodec( UserMessageCodec.SelectCourseMessageCodec())
         val adapter = vertx.receiveChannelHandler<Message<SelectCourseMessage>>()
@@ -51,14 +63,17 @@ class SelectCourseVericleKt : CoroutineVerticle() {
         launch {
             while (true) {
                 val msg = adapter.receive()
+                log.debug("SelectCourseVerticleKt receive message")
                 val seat: Int? = emptySeat.poll()
                 if (seat == null) {
                     val jobID = JobIDGenerator.getInstance().generate()
                     waitForAvailableSeat(msg)
+                    log.debug(String.format("push_job %d to queue", jobID))
                     msg.body().result = msg.body().SelectCourseResult(1, jobID)
-                    msg.reply(msg)
+                    msg.reply(msg.body(), deliveryOptions)
                 } else {
-                    msg.body().result.Status = 0
+                    msg.body().result = msg.body().SelectCourseResult(0, -1)
+                    log.debug("doSelectCourse")
                     doSelectCourse(msg)
                 }
             }
@@ -83,16 +98,18 @@ class SelectCourseVericleKt : CoroutineVerticle() {
         val sortedStudentCourseSchedule: List<CourseSchedule>
         //获取学生课表失败
         if (studentCourseSqlResult.size == 0) {
+            log.debug("query student course schedule with 0 return size")
             //如果是非排队请求，立马返回，告知失败
             if (msg.body().result.Status == 0) {
                 msg.body().result.Results = ArrayList<SelectCourseMessage.Result>()
-                msg.reply(msg.body())
+                msg.reply(msg.body(), deliveryOptions)
             } else {
                 //结果插入redis
             }
             tryPollJobQueue()
             return
         } else {
+            log.debug(String.format("query student course schedule with return size %d", studentCourseSqlResult.size))
             //从studentCourseSqlResult提取课表信息，主要是上课时间
             var studentCourseSchedule = ArrayList<CourseSchedule>()
             for (row in studentCourseSqlResult) {
@@ -105,18 +122,23 @@ class SelectCourseVericleKt : CoroutineVerticle() {
             sortedStudentCourseSchedule = studentCourseSchedule.sorted()
         }
 
+        msg.body().result.Results = ArrayList<SelectCourseMessage.Result>()
         val courseTimeSqlResult = mysqlConn.queryAwait(makeCourseTimeSQL(msg.body().request.courseIDs)).results          //所选课程的信息，主要是上课时间
+        log.debug(String.format("query course schedule with size %d", courseTimeSqlResult.size))
         val toSelectCoursesSchedule = HashMap<Long, MutableList<CourseSchedule>>()
         for (row in courseTimeSqlResult) {
             //等价于 toSelectCoursesSchedule[course_id].push_back(course)
-            toSelectCoursesSchedule.getOrDefault(row.getLong(0), ArrayList())
+            toSelectCoursesSchedule.getOrPut(row.getLong(0), {ArrayList<CourseSchedule>()})
+            //toSelectCoursesSchedule.getOrDefault(row.getLong(0), ArrayList())
                     .add(CourseSchedule(
                             row.getLong(0),     //courseId
                             row.getInteger(1),  //week
                             row.getInteger(2),  //day_of_week
                             row.getInteger(3))) //section_of_day
         }
+        log.debug(String.format("ready to timeMatch %d", toSelectCoursesSchedule.size))
         for (course in toSelectCoursesSchedule) {
+            log.debug("in time match")
             if (timeMatch(sortedStudentCourseSchedule, course.value)) {
                 //FIXME: 如果这么干，学生自己选的课时间有可能冲突，一个方法是从Login处限制一个用户只能有一个session
                 val updateResult = mysqlConn.updateAwait(makeUpdateCourseRemainSQL(course.key))
@@ -126,13 +148,15 @@ class SelectCourseVericleKt : CoroutineVerticle() {
                 }
                 //FIXME: 有没有可能一次不成功，要update多次
                 mysqlConn.updateAwait(makeInsertStudentCourseRelationSQL(msg.body().request.userID, course.key))
+                log.debug(String.format("uid:%d course:%d timeMatch success", msg.body().request.userID, course.key))
                 msg.body().result.Results.add(msg.body().Result(true, course.key))
             } else {
+                log.debug(String.format("uid:%d course:%d timeMatch fail", msg.body().request.userID, course.key))
                 msg.body().result.Results.add(msg.body().Result(false, course.key))
             }
         }
         //结果插入redis
-        msg.reply(msg.body())
+        msg.reply(msg.body(), deliveryOptions)
         tryPollJobQueue()
     }
 
@@ -178,7 +202,7 @@ private fun makeCourseTimeSQL(uids: List<Int>) : String {
     val builder = StringBuilder("""SELECT course_id, week, day_of_week, section_of_day
  FROM tb_course_schedule
  WHERE course_id IN (""")
-    for (i in 0..uids.size) {
+    for (i in 0 until uids.size) {
         if (i == 0) {
             builder.append(uids[i])
         } else {
@@ -186,7 +210,7 @@ private fun makeCourseTimeSQL(uids: List<Int>) : String {
             builder.append(uids[i])
         }
     }
-    builder.append(';')
+    builder.append(");")
     return builder.toString()
 }
 
@@ -197,7 +221,7 @@ private fun makeUpdateCourseRemainSQL(courseId: Long) : String {
 }
 
 private fun makeInsertStudentCourseRelationSQL(uid: Int, courseId: Long) : String {
-    return """INSERT INTO tb_course_schedule
+    return """INSERT INTO tb_student_course
  (student, course)
  VALUES
  ($uid, $courseId);"""

@@ -9,11 +9,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 
 //登录逻辑为 用户先从第三方统一认证中心获得token，再把uid和token拿来请求该服务的/login，
 //服务拿这些信息去第三方统一认证中心认证，认证成功后在session写入相关信息，并跳转index.html
+@Slf4j
 public class LoginHandler implements Handler<RoutingContext> {
 
     private AuthProvider authProvider;
@@ -50,9 +52,11 @@ public class LoginHandler implements Handler<RoutingContext> {
                 User user = e.result();
                 event.setUser(user);
                 //跳转到主页
+                log.debug(String.format("%s login succeed, do redirect", uid));
                 doRedirect(event.response(), redirectURL);
             } else {
                 //认证失败
+                log.debug(String.format("%s login failed", uid));
                 event.fail(403);
             }
         });

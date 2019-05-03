@@ -1,9 +1,6 @@
 package cn.pgyyd.mcg;
 
-import cn.pgyyd.mcg.verticle.MainVerticle;
-import cn.pgyyd.mcg.verticle.MySqlVerticle;
-import cn.pgyyd.mcg.verticle.RedisClientVerticle;
-import cn.pgyyd.mcg.verticle.SelectCourseVerticle;
+import cn.pgyyd.mcg.verticle.*;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -30,10 +27,11 @@ public class Main {
                 Future<String> mysqlFuture = Future.future();
                 Future<String> redisFuture = Future.future();
                 Future<String> selectFuture = Future.future();
-                vertx.deployVerticle(MySqlVerticle.class.getName(), mysqlFuture);
-                vertx.deployVerticle(RedisClientVerticle.class.getName(), redisFuture);
-                vertx.deployVerticle(SelectCourseVerticle.class.getName(), selectFuture);
-                CompositeFuture.all(mysqlFuture, redisFuture, selectFuture).setHandler(ar->{
+                //vertx.deployVerticle(MySqlVerticle.class.getName(), mysqlFuture);
+                //vertx.deployVerticle(RedisClientVerticle.class.getName(), redisFuture);
+                //vertx.deployVerticle(SelectCourseVerticleKt.class.getName(), selectFuture);
+                //CompositeFuture.all(redisFuture, selectFuture).setHandler(ar->{
+                vertx.deployVerticle(new SelectCourseVerticleKt(), new DeploymentOptions().setConfig(cfg.result()), ar-> {
                     if (ar.succeeded()) {
                         JsonObject config = cfg.result();
                         DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config);
