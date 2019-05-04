@@ -50,7 +50,7 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
         DeliveryOptions deliveryOptions = new DeliveryOptions().setCodecName(new UserMessageCodec.SelectCourseMessageCodec().name());
         event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, msg, deliveryOptions, res -> {
             SelectCourseMessage replyMsg = (SelectCourseMessage) res.result().body();
-            switch (replyMsg.result.Status) {
+            switch (replyMsg.result.status) {
                 //处理完成
                 case 0:
                     log.debug("receive immediate reply from SelectCourseVerticleKt");
@@ -72,7 +72,7 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                             .putHeader("content-type", "application/json")
                             .end(new JsonObject()
                                     .put("status_code", 1)
-                                    .put("job_id", replyMsg.request.jobID)
+                                    .put("job_id", replyMsg.result.jobID)
                                     .toString());
                     break;
                 default:

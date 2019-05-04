@@ -57,6 +57,7 @@ public class MainVerticle extends AbstractVerticle {
 
     //轮询选课结果请求处理器
     private void addCheckSelectionResultHandler(Router router) {
+        CheckSelectionResultHandler.init(vertx, config().getJsonObject("redis"));
         router.route(HttpMethod.POST, McgConst.CHECK_QUERY_PATH).handler(new CheckSelectionResultHandler());
     }
 

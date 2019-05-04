@@ -11,16 +11,15 @@ public class SelectCourseMessage implements Serializable {
         }
         public int userID;
         public List<Integer> courseIDs;
-        public int jobID = -1;
     }
     public class SelectCourseResult {
 
         public SelectCourseResult(int status, long jodbid) {
-            Status = status;
-            JobID = jodbid;
+            this.status = status;
+            this.jobID = jodbid;
         }
-        public Long JobID;
-        public int Status;      //0处理完成 2排队中
+        public Long jobID;
+        public int status;      //0处理完成 2排队中
         public List<Result> Results;
     }
     public class Result {

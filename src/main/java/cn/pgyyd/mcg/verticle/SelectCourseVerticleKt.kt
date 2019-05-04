@@ -2,8 +2,6 @@ package cn.pgyyd.mcg.verticle
 
 import cn.pgyyd.mcg.constant.McgConst
 import cn.pgyyd.mcg.ds.SelectCourseMessage
-import cn.pgyyd.mcg.ds.SelectCourseRequest
-import cn.pgyyd.mcg.ds.SelectCourseResult
 import cn.pgyyd.mcg.module.UserMessageCodec
 import cn.pgyyd.mcg.singleton.JobIDGenerator
 import io.vertx.core.eventbus.Message
@@ -18,11 +16,12 @@ import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import cn.pgyyd.mcg.interfaces.Test
 import io.vertx.core.eventbus.DeliveryOptions
-import lombok.extern.slf4j.Slf4j
-import org.apache.log4j.Logger
+import io.vertx.kotlin.redis.setAwait
+import io.vertx.redis.RedisClient
+import io.vertx.redis.RedisOptions
 import org.slf4j.LoggerFactory
+import kotlin.random.Random
 
 
 data class CourseSchedule(val course: Long, val week: Int, val day: Int, val section: Int) : Comparable<CourseSchedule> {
@@ -42,6 +41,8 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
 
     private lateinit var mySqlClient : AsyncSQLClient
 
+    private lateinit var redisClient : RedisClient
+
     private var emptySeat = ArrayDeque<Int?>()
 
     private var jobQueue = ArrayDeque<Message<SelectCourseMessage>>()
@@ -49,15 +50,28 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
     val deliveryOptions = DeliveryOptions().setCodecName(UserMessageCodec.SelectCourseMessageCodec().name())
 
     override suspend fun start() {
-        log.debug("start SelectCourseVerticleKt")
-        val maxDoingJobs = config.getInteger("max_doing_jobs")
+        val maxDoingJobs = config.getInteger("max_doing_jobs", 50)
+        log.info("Start SelectCourseVerticleKt with max_doing_jobs:$maxDoingJobs")
         for (i in 1 until maxDoingJobs) {
             emptySeat.add(1)
         }
         mySqlClient = MySQLClient.createShared(vertx, config.getJsonObject("mysql"), "kotlin.sql.pool")
         log.debug("mySqlClient started")
+        val redisConfig = config.getJsonObject("redis")
+        redisClient = RedisClient.create(vertx, RedisOptions()
+                .setHost(redisConfig.getString("host"))
+                .setAuth(redisConfig.getString("auth"))
+                )
+        log.debug("redisClient started")
 
-        vertx.eventBus().registerCodec( UserMessageCodec.SelectCourseMessageCodec())
+        var nodeId = config.getInteger("node_id")
+        if (nodeId == null) {
+            nodeId = Random(System.currentTimeMillis()).nextInt();
+            log.warn("node_id not set, use random integer:$nodeId")
+        }
+        JobIDGenerator.init(nodeId)
+
+        vertx.eventBus().registerCodec(UserMessageCodec.SelectCourseMessageCodec())
         val adapter = vertx.receiveChannelHandler<Message<SelectCourseMessage>>()
         vertx.eventBus().consumer<SelectCourseMessage>(McgConst.EVENT_BUS_SELECT_COURSE, adapter)
         launch {
@@ -65,15 +79,14 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
                 val msg = adapter.receive()
                 log.debug("SelectCourseVerticleKt receive message")
                 val seat: Int? = emptySeat.poll()
+                val jobID = JobIDGenerator.getInstance().generate()
                 if (seat == null) {
-                    val jobID = JobIDGenerator.getInstance().generate()
-                    waitForAvailableSeat(msg)
                     log.debug(String.format("push_job %d to queue", jobID))
+                    waitForAvailableSeat(msg)
                     msg.body().result = msg.body().SelectCourseResult(1, jobID)
                     msg.reply(msg.body(), deliveryOptions)
                 } else {
-                    msg.body().result = msg.body().SelectCourseResult(0, -1)
-                    log.debug("doSelectCourse")
+                    msg.body().result = msg.body().SelectCourseResult(0, jobID)
                     doSelectCourse(msg)
                 }
             }
@@ -87,12 +100,6 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
     }
 
     private suspend fun doSelectCourse(msg: Message<SelectCourseMessage>) {
-        //1. 根据courseids取出课程的时间信息，根据学生id取出学生的课表信息(先不管redis缓存的事，直接从mysql取）
-        //2. 遍历courseids，把跟学生课表时间能匹配上的courseid，取出组成新的courseids
-        //3. 遍历courseids去更新remain表，更新成功的，组成一个success list
-        //4. 向handler写入结果: handler.handle(Future.succeededFuture(msg));
-        //5. 处理剩余数据库操作
-        //6. 退出
         val mysqlConn = mySqlClient.getConnectionAwait()
         val studentCourseSqlResult = mysqlConn.queryAwait(makeStudentScheduleSQL(msg.body().request.userID)).results  //学生自己的课表
         val sortedStudentCourseSchedule: List<CourseSchedule>
@@ -100,18 +107,27 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
         if (studentCourseSqlResult.size == 0) {
             log.debug("query student course schedule with 0 return size")
             //如果是非排队请求，立马返回，告知失败
-            if (msg.body().result.Status == 0) {
+            if (msg.body().result.status == 0) {
                 msg.body().result.Results = ArrayList<SelectCourseMessage.Result>()
                 msg.reply(msg.body(), deliveryOptions)
             } else {
                 //结果插入redis
+                val builder = StringBuilder()
+                for (idx in 0 until msg.body().request.courseIDs.size) {
+                    if (idx != 0)
+                        builder.append("_")
+                    builder.append(msg.body().request.courseIDs[idx])
+                    builder.append("_")
+                    builder.append(false)
+                }
+                redisClient.setAwait(msg.body().result.jobID.toString(), builder.toString())
             }
             tryPollJobQueue()
             return
         } else {
             log.debug(String.format("query student course schedule with return size %d", studentCourseSqlResult.size))
             //从studentCourseSqlResult提取课表信息，主要是上课时间
-            var studentCourseSchedule = ArrayList<CourseSchedule>()
+            val studentCourseSchedule = ArrayList<CourseSchedule>()
             for (row in studentCourseSqlResult) {
                 val course = row.getLong(0)
                 val week = row.getInteger(1)
@@ -156,6 +172,16 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
             }
         }
         //结果插入redis
+        val builder = StringBuilder()
+        val tempResult = msg.body().result.Results
+        for (idx in 0 until tempResult.size) {
+            if (idx != 0)
+                builder.append("_")
+            builder.append(tempResult[idx].courseID)
+            builder.append("_")
+            builder.append(tempResult[idx].success)
+        }
+        redisClient.setAwait(msg.body().result.jobID.toString(), builder.toString())
         msg.reply(msg.body(), deliveryOptions)
         tryPollJobQueue()
     }

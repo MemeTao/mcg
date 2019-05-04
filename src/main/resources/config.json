@@ -2,10 +2,15 @@
     "port": 8080,
     "threads": 4,
     "max_doing_jobs": 10,
+    "node_id": 1,
     "mysql": {
         "host": "localhost",
-        "username": "root",
+        "username": "ntu",
         "password": "123456",
         "database": "mcg"
+    },
+    "redis": {
+        "host": "127.0.0.1",
+        "auth": "123456"
     }
 }
