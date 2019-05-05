@@ -221,7 +221,7 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
 private fun makeStudentScheduleSQL(uid: Int) : String {
     return """SELECT b.course_id, b.week, b.day_of_week, b.section_of_day
  FROM tb_student_course a, tb_course_schedule b
- WHERE a.course = b.course_id AND a.student = $uid;"""
+ WHERE a.course_id = b.course_id AND a.student_id = $uid;"""
 }
 
 private fun makeCourseTimeSQL(uids: List<Int>) : String {
@@ -248,7 +248,7 @@ private fun makeUpdateCourseRemainSQL(courseId: Long) : String {
 
 private fun makeInsertStudentCourseRelationSQL(uid: Int, courseId: Long) : String {
     return """INSERT INTO tb_student_course
- (student, course)
+ (student_id, course_id)
  VALUES
  ($uid, $courseId);"""
 }

@@ -9,6 +9,7 @@ import io.vertx.redis.RedisClient;
 import io.vertx.redis.RedisOptions;
 
 public class CheckSelectionResultHandler implements Handler<RoutingContext> {
+    //FIXME: 这种方式的RedisClient是所有线程共享一个连接，如果遇到性能瓶颈，可以改成一个线程一个RedisClient
     private static RedisClient redisClient;
 
     public static void init(Vertx vertx, JsonObject redisConfig) {
