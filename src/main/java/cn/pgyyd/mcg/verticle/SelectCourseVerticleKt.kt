@@ -17,6 +17,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import io.vertx.core.eventbus.DeliveryOptions
+import io.vertx.kotlin.ext.sql.closeAwait
 import io.vertx.kotlin.redis.setAwait
 import io.vertx.redis.RedisClient
 import io.vertx.redis.RedisOptions
@@ -47,7 +48,7 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
 
     private var jobQueue = ArrayDeque<Message<SelectCourseMessage>>()
 
-    val deliveryOptions = DeliveryOptions().setCodecName(UserMessageCodec.SelectCourseMessageCodec().name())
+    private val deliveryOptions = DeliveryOptions().setCodecName(UserMessageCodec.SelectCourseMessageCodec().name())
 
     override suspend fun start() {
         val maxDoingJobs = config.getInteger("max_doing_jobs", 50)
@@ -56,13 +57,13 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
             emptySeat.add(1)
         }
         mySqlClient = MySQLClient.createShared(vertx, config.getJsonObject("mysql"), "kotlin.sql.pool")
-        log.debug("mySqlClient started")
+        log.info("mySqlClient started")
         val redisConfig = config.getJsonObject("redis")
         redisClient = RedisClient.create(vertx, RedisOptions()
                 .setHost(redisConfig.getString("host"))
                 .setAuth(redisConfig.getString("auth"))
                 )
-        log.debug("redisClient started")
+        log.info("redisClient started")
 
         var nodeId = config.getInteger("node_id")
         if (nodeId == null) {
@@ -77,17 +78,18 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
         launch {
             while (true) {
                 val msg = adapter.receive()
-                log.debug("SelectCourseVerticleKt receive message")
+                log.info("SelectCourseVerticleKt receive message")
                 val seat: Int? = emptySeat.poll()
                 val jobID = JobIDGenerator.getInstance().generate()
                 if (seat == null) {
-                    log.debug(String.format("push_job %d to queue", jobID))
+                    log.info(String.format("push_job %d to queue", jobID))
                     waitForAvailableSeat(msg)
                     msg.body().result = msg.body().SelectCourseResult(1, jobID)
                     msg.reply(msg.body(), deliveryOptions)
                 } else {
                     msg.body().result = msg.body().SelectCourseResult(0, jobID)
-                    doSelectCourse(msg)
+                    launch { doSelectCourse((msg)) }
+                    //doSelectCourse(msg)
                 }
             }
         }
@@ -97,15 +99,19 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
 
     private fun waitForAvailableSeat(msg: Message<SelectCourseMessage>) {
         jobQueue.add(msg)
+        log.info("add request to queue, queue size:${jobQueue.size}")
     }
 
     private suspend fun doSelectCourse(msg: Message<SelectCourseMessage>) {
+        log.info("doSelectCourse start jobID:${msg.body().result.jobID}")
         val mysqlConn = mySqlClient.getConnectionAwait()
+        log.info("doSelectCourse getconnection jobID:${msg.body().result.jobID}")
         val studentCourseSqlResult = mysqlConn.queryAwait(makeStudentScheduleSQL(msg.body().request.userID)).results  //学生自己的课表
+        log.info("doSelectCourse query jobID:${msg.body().result.jobID}")
         val sortedStudentCourseSchedule: List<CourseSchedule>
         //获取学生课表失败
         if (studentCourseSqlResult.size == 0) {
-            log.debug("query student course schedule with 0 return size")
+            log.info("query uid:${msg.body().request.userID} course schedule with 0 return size")
             //如果是非排队请求，立马返回，告知失败
             if (msg.body().result.status == 0) {
                 msg.body().result.Results = ArrayList<SelectCourseMessage.Result>()
@@ -122,10 +128,11 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
                 }
                 redisClient.setAwait(msg.body().result.jobID.toString(), builder.toString())
             }
+            mysqlConn.closeAwait()
             tryPollJobQueue()
             return
         } else {
-            log.debug(String.format("query student course schedule with return size %d", studentCourseSqlResult.size))
+            log.info(String.format("query student course schedule with return size %d", studentCourseSqlResult.size))
             //从studentCourseSqlResult提取课表信息，主要是上课时间
             val studentCourseSchedule = ArrayList<CourseSchedule>()
             for (row in studentCourseSqlResult) {
@@ -140,7 +147,7 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
 
         msg.body().result.Results = ArrayList<SelectCourseMessage.Result>()
         val courseTimeSqlResult = mysqlConn.queryAwait(makeCourseTimeSQL(msg.body().request.courseIDs)).results          //所选课程的信息，主要是上课时间
-        log.debug(String.format("query course schedule with size %d", courseTimeSqlResult.size))
+        log.info(String.format("query course schedule with size %d", courseTimeSqlResult.size))
         val toSelectCoursesSchedule = HashMap<Long, MutableList<CourseSchedule>>()
         for (row in courseTimeSqlResult) {
             //等价于 toSelectCoursesSchedule[course_id].push_back(course)
@@ -152,9 +159,9 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
                             row.getInteger(2),  //day_of_week
                             row.getInteger(3))) //section_of_day
         }
-        log.debug(String.format("ready to timeMatch %d", toSelectCoursesSchedule.size))
+        log.info(String.format("ready to timeMatch %d", toSelectCoursesSchedule.size))
         for (course in toSelectCoursesSchedule) {
-            log.debug("in time match")
+            log.info("in time match")
             if (timeMatch(sortedStudentCourseSchedule, course.value)) {
                 //FIXME: 如果这么干，学生自己选的课时间有可能冲突，一个方法是从Login处限制一个用户只能有一个session
                 val updateResult = mysqlConn.updateAwait(makeUpdateCourseRemainSQL(course.key))
@@ -164,13 +171,14 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
                 }
                 //FIXME: 有没有可能一次不成功，要update多次
                 mysqlConn.updateAwait(makeInsertStudentCourseRelationSQL(msg.body().request.userID, course.key))
-                log.debug(String.format("uid:%d course:%d timeMatch success", msg.body().request.userID, course.key))
+                log.info(String.format("uid:%d course:%d timeMatch success", msg.body().request.userID, course.key))
                 msg.body().result.Results.add(msg.body().Result(true, course.key))
             } else {
-                log.debug(String.format("uid:%d course:%d timeMatch fail", msg.body().request.userID, course.key))
+                log.info(String.format("uid:%d course:%d timeMatch fail", msg.body().request.userID, course.key))
                 msg.body().result.Results.add(msg.body().Result(false, course.key))
             }
         }
+        mysqlConn.closeAwait()
         //结果插入redis
         val builder = StringBuilder()
         val tempResult = msg.body().result.Results
@@ -205,12 +213,14 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
     }
 
     private fun tryPollJobQueue() {
+        log.info("tryPollJobQueue jobQueue.size:${jobQueue.size}")
         val task = jobQueue.poll()
         if (task != null) {
             launch {
                 doSelectCourse(task)
             }
         } else if (emptySeat.size < config.getInteger("max_doing_jobs")) {
+            log.info("tryPollJobQueue add to emptySeat")
             emptySeat.add(1)
         }
     }

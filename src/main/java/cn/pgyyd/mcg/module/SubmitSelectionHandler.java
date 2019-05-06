@@ -49,11 +49,15 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
         log.info("send request to SelectCourseVerticleKt");
         DeliveryOptions deliveryOptions = new DeliveryOptions().setCodecName(new UserMessageCodec.SelectCourseMessageCodec().name());
         event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, msg, deliveryOptions, res -> {
+            if (res.failed()) {
+                log.error(res.cause().toString());
+                event.response().end("fail");
+            }
             SelectCourseMessage replyMsg = (SelectCourseMessage) res.result().body();
             switch (replyMsg.result.status) {
                 //处理完成
                 case 0:
-                    log.debug("receive immediate reply from SelectCourseVerticleKt");
+                    log.info("receive immediate reply from SelectCourseVerticleKt");
                     JsonArray selectResults = new JsonArray();
                     for (SelectCourseMessage.Result r : replyMsg.result.Results) {
                         selectResults.add(new JsonObject().put("course", r.courseID).put("status", r.success));
@@ -67,7 +71,7 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                     break;
                 //排队选课
                 case 1:
-                    log.debug("receive pending reply from SelectCourseVerticleKt");
+                    log.info("receive pending reply from SelectCourseVerticleKt");
                     event.response()
                             .putHeader("content-type", "application/json")
                             .end(new JsonObject()
@@ -76,7 +80,7 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                                     .toString());
                     break;
                 default:
-                    log.debug("receive wrong reply type");
+                    log.info("receive wrong reply type");
             }
         });
     }

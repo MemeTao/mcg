@@ -31,8 +31,8 @@ public class CheckSelectionResultHandler implements Handler<RoutingContext> {
                     JsonArray results = new JsonArray();
                     for (int i = 0; i < redisResult.length; i+=2) {
                         results.add(new JsonObject()
-                                .put("course", redisResult[i])
-                                .put("result", Boolean.valueOf(redisResult[i+1]))
+                                .put("course", Integer.valueOf(redisResult[i]))
+                                .put("success", Boolean.valueOf(redisResult[i+1]))
                         );
                     }
                     response.put("results", results);
