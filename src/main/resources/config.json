@@ -7,7 +7,8 @@
         "host": "localhost",
         "username": "ntu",
         "password": "123456",
-        "database": "mcg"
+        "database": "mcg",
+        "maxPoolSize": 10
     },
     "redis": {
         "host": "127.0.0.1",

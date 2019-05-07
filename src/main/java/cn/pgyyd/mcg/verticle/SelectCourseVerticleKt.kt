@@ -21,6 +21,7 @@ import io.vertx.kotlin.ext.sql.closeAwait
 import io.vertx.kotlin.redis.setAwait
 import io.vertx.redis.RedisClient
 import io.vertx.redis.RedisOptions
+import kotlinx.coroutines.GlobalScope
 import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
@@ -29,7 +30,7 @@ data class CourseSchedule(val course: Long, val week: Int, val day: Int, val sec
     override fun compareTo(other: CourseSchedule): Int {
         return when {
             this.week != other.week -> this.week  - other.week
-            this.day != other.week -> this.day - other.day
+            this.day != other.day -> this.day - other.day
             this.section != other.section -> this.section - other.section
             else -> 0
         }
@@ -163,6 +164,7 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
         for (course in toSelectCoursesSchedule) {
             log.info("in time match")
             if (timeMatch(sortedStudentCourseSchedule, course.value)) {
+                log.info(String.format("uid:%d course:%d timeMatch success", msg.body().request.userID, course.key))
                 //FIXME: 如果这么干，学生自己选的课时间有可能冲突，一个方法是从Login处限制一个用户只能有一个session
                 val updateResult = mysqlConn.updateAwait(makeUpdateCourseRemainSQL(course.key))
                 if (updateResult.updated == 0) {
@@ -171,7 +173,6 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
                 }
                 //FIXME: 有没有可能一次不成功，要update多次
                 mysqlConn.updateAwait(makeInsertStudentCourseRelationSQL(msg.body().request.userID, course.key))
-                log.info(String.format("uid:%d course:%d timeMatch success", msg.body().request.userID, course.key))
                 msg.body().result.Results.add(msg.body().Result(true, course.key))
             } else {
                 log.info(String.format("uid:%d course:%d timeMatch fail", msg.body().request.userID, course.key))
@@ -253,7 +254,7 @@ private fun makeCourseTimeSQL(uids: List<Int>) : String {
 private fun makeUpdateCourseRemainSQL(courseId: Long) : String {
     return """UPDATE tb_course
  SET students = students + 1
- WHERE id = $courseId;"""
+ WHERE course_id = $courseId;"""
 }
 
 private fun makeInsertStudentCourseRelationSQL(uid: Int, courseId: Long) : String {
