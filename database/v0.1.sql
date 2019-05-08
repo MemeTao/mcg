@@ -18,6 +18,8 @@ CREATE TABLE `mcg_course` (
   KEY `idx_majorId` (`majorId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '课程表';
 
+-- load data local infile "mcg_course.txt" into table mcg_course_remain fields terminated by '|';
+
 -- 课程时间
 CREATE TABLE `mcg_course_timerange` (
   `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
@@ -31,6 +33,8 @@ CREATE TABLE `mcg_course_timerange` (
   KEY `idx_start_end` (`start`,`end`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '课程时间表';
 
+load data local infile "database/mcg_course_timerange.txt" into table mcg_course_timerange fields terminated by '|';
+
 -- 学生-课程 关系表，每条记录代表x学生选择了（拥有了）这个课
 CREATE TABLE `mcg_student_course` (
     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
@@ -40,6 +44,7 @@ CREATE TABLE `mcg_student_course` (
     UNIQUE KEY (`studentId`, `courseId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '学生课表(已有)';
 
+load data local infile "database/mcg_student_course.txt" into table mcg_student_course fields terminated by '|';
 
 -- 选课中课程信息
 CREATE TABLE `mcg_course_remain` (
@@ -50,5 +55,6 @@ CREATE TABLE `mcg_course_remain` (
   KEY `idx_courseId` (`courseId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '选课中课程信息表';
 
+load data local infile "database/mcg_course_remain.txt" into table mcg_course_remain fields terminated by '|';
 
 

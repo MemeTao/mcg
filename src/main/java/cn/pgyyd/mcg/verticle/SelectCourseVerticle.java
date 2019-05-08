@@ -188,6 +188,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         
         Long key = jobs.firstKey();
         Task t = jobs.get(key);
+        jobs.remove(key);       //立即删除
         doSelectCourse(t,res->{
             /*FIXME:选课结果可能是部分成功，在redis中需要另外一个地方来记录已成功课程s*/
             set_task_status(t,Task.DONE ,r->{
@@ -196,9 +197,6 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                     //客户端的行为：轮询失败，下次页面更新的时候才能看到他自己的选课记录
                 }
             });
-            if(jobs.containsKey(key)) {
-                jobs.remove(key);
-            }
             schedule();
         });
     }
