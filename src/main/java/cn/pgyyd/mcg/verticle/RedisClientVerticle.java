@@ -45,7 +45,6 @@ public class RedisClientVerticle extends AbstractVerticle {
         //transaction_client = client.transaction();
         System.out.println("[info] waiting for mysql initilization to complete...");
         Thread.sleep(1000);
-        new MysqlProxy(vertx).getCourseIdList(null);
     }
     
     static public RedisClient client() {
