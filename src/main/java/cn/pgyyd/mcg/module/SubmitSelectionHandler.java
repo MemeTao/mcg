@@ -59,7 +59,7 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                 case 0:
                     log.info("receive immediate reply from SelectCourseVerticleKt");
                     JsonArray selectResults = new JsonArray();
-                    for (SelectCourseMessage.Result r : replyMsg.result.Results) {
+                    for (SelectCourseMessage.Result r : replyMsg.result.results) {
                         selectResults.add(new JsonObject().put("course", r.courseID).put("status", r.success));
                     }
                     event.response()

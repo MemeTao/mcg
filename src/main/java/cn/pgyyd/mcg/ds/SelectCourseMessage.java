@@ -20,7 +20,7 @@ public class SelectCourseMessage implements Serializable {
         }
         public Long jobID;
         public int status;      //0处理完成 2排队中
-        public List<Result> Results;
+        public List<Result> results;
     }
     public class Result {
         public Result() {}

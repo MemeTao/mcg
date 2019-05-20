@@ -6,7 +6,7 @@ import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
+//import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -14,8 +14,9 @@ public class Main {
     public static void main(String[] args) {
         log.info("System starting...");
         Vertx vertx = Vertx.vertx();
-//        Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-//                new DropwizardMetricsOptions().setJmxEnabled(true)));
+//      用于画指标图标，暂时注释掉
+//      Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+//             new DropwizardMetricsOptions().setJmxEnabled(true)));
         ConfigStoreOptions storeOptions = new ConfigStoreOptions().setType("file").setConfig(new JsonObject().put("path", "config.json"));
         ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions().addStore(storeOptions);
         ConfigRetriever retriever =  ConfigRetriever.create(vertx, retrieverOptions);
