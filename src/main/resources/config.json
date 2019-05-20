@@ -1,4 +1,18 @@
 {
     "port": 8080,
-    "threads": 4
+    "threads": 4,
+    "注释1": "此处的max_doing_jobs必须和mysql中的maxPoolSize保持一致。未来可用yml做配置文件解决这个问题",
+    "max_doing_jobs": 10,
+    "node_id": 1,
+    "mysql": {
+        "host": "localhost",
+        "username": "ntu",
+        "password": "123456",
+        "database": "mcg",
+        "maxPoolSize": 10
+    },
+    "redis": {
+        "host": "127.0.0.1",
+        "auth": "123456"
+    }
 }

@@ -2,10 +2,7 @@ package cn.pgyyd.mcg.verticle;
 
 import cn.pgyyd.mcg.auth.CjluAuth;
 import cn.pgyyd.mcg.constant.McgConst;
-import cn.pgyyd.mcg.module.CheckSelectionResultHandler;
-import cn.pgyyd.mcg.module.CourseInfoHandler;
-import cn.pgyyd.mcg.module.LoginHandler;
-import cn.pgyyd.mcg.module.SubmitSelectionHandler;
+import cn.pgyyd.mcg.module.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
@@ -55,11 +52,12 @@ public class MainVerticle extends AbstractVerticle {
 
     //选课请求处理器
     private void addSubmitSelectionHandler(Router router) {
-        router.route(HttpMethod.POST, McgConst.SELECT_QUERY_PATH).handler(new SubmitSelectionHandler(config().getInteger("max_jobs")));
+        router.route(HttpMethod.POST, McgConst.SELECT_QUERY_PATH).handler(new SubmitSelectionHandler());
     }
 
     //轮询选课结果请求处理器
     private void addCheckSelectionResultHandler(Router router) {
+        CheckSelectionResultHandler.init(vertx, config().getJsonObject("redis"));
         router.route(HttpMethod.POST, McgConst.CHECK_QUERY_PATH).handler(new CheckSelectionResultHandler());
     }
 
@@ -68,7 +66,6 @@ public class MainVerticle extends AbstractVerticle {
         AuthProvider authProvider = new CjluAuth();
         //登录功能依次依赖于 用户session -> http session -> cookie
         router.route().handler(CookieHandler.create());
-        //FIXME: 需求设置过期时间么
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
         router.route().handler(UserSessionHandler.create(authProvider));
         router.route().handler(event -> {

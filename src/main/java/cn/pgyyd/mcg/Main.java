@@ -1,17 +1,12 @@
 package cn.pgyyd.mcg;
 
-import cn.pgyyd.mcg.verticle.MainVerticle;
-import cn.pgyyd.mcg.verticle.MySqlVerticle;
-import cn.pgyyd.mcg.verticle.RedisClientVerticle;
-import cn.pgyyd.mcg.verticle.SelectCourseVerticle;
+import cn.pgyyd.mcg.verticle.*;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
+//import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -19,6 +14,9 @@ public class Main {
     public static void main(String[] args) {
         log.info("System starting...");
         Vertx vertx = Vertx.vertx();
+//      用于画指标图标，暂时注释掉
+//      Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
+//             new DropwizardMetricsOptions().setJmxEnabled(true)));
         ConfigStoreOptions storeOptions = new ConfigStoreOptions().setType("file").setConfig(new JsonObject().put("path", "config.json"));
         ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions().addStore(storeOptions);
         ConfigRetriever retriever =  ConfigRetriever.create(vertx, retrieverOptions);
@@ -30,16 +28,17 @@ public class Main {
                 Future<String> mysqlFuture = Future.future();
                 Future<String> redisFuture = Future.future();
                 Future<String> selectFuture = Future.future();
-                vertx.deployVerticle(MySqlVerticle.class.getName(), mysqlFuture);
-                vertx.deployVerticle(RedisClientVerticle.class.getName(), redisFuture);
-                vertx.deployVerticle(SelectCourseVerticle.class.getName(), selectFuture);
-                CompositeFuture.all(mysqlFuture, redisFuture, selectFuture).setHandler(ar->{
+                //vertx.deployVerticle(MySqlVerticle.class.getName(), mysqlFuture);
+                //vertx.deployVerticle(RedisClientVerticle.class.getName(), redisFuture);
+                //vertx.deployVerticle(SelectCourseVerticleKt.class.getName(), selectFuture);
+                //CompositeFuture.all(redisFuture, selectFuture).setHandler(ar->{
+                vertx.deployVerticle(new SelectCourseVerticleKt(), new DeploymentOptions().setConfig(cfg.result()), ar-> {
                     if (ar.succeeded()) {
                         JsonObject config = cfg.result();
                         DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config);
                         int cores = Runtime.getRuntime().availableProcessors();
                         deploymentOptions.setInstances(config.getInteger("threads", cores));
-
+                        log.info(String.format("Start MainVerticle with %d cores", cores));
                         vertx.deployVerticle(MainVerticle.class.getName(), deploymentOptions, r->{
                             if (r.succeeded()) {
                                 log.info("Start success");
