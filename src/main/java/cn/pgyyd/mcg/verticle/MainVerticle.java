@@ -57,8 +57,10 @@ public class MainVerticle extends AbstractVerticle {
 
     //轮询选课结果请求处理器
     private void addCheckSelectionResultHandler(Router router) {
-        CheckSelectionResultHandler.init(vertx, config().getJsonObject("redis"));
-        router.route(HttpMethod.POST, McgConst.CHECK_QUERY_PATH).handler(new CheckSelectionResultHandler());
+        //在构造函数里连接Redis会出事吗...
+        router.route(HttpMethod.POST, McgConst.CHECK_QUERY_PATH).handler(
+                new CheckSelectionResultHandler(vertx, config().getJsonObject("redis"))
+        );
     }
 
     //登录与认证处理器
