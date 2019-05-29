@@ -12,12 +12,18 @@ public class MysqlMessage {
      * 不使用模板，明确区分每一个操作类型
      */
     static public class QueryMessage{
-        
         private String op;
+        
         private AsyncResult<ResultSet> result;
+        
+        public long indentification = -1;
         
         public QueryMessage(final AsyncResult<ResultSet> r){
             result = r;
+        }
+        public QueryMessage(final String operation,long id){
+            op = operation;
+            indentification = id;
         }
         public QueryMessage(final String operation){
             op = operation;
@@ -31,12 +37,18 @@ public class MysqlMessage {
     }
     
     static public class ExecuteMessage{
-        
         private String op;
+        
         private AsyncResult<Void> result;
+        
+        public long indentification = -1;
         
         public ExecuteMessage(final AsyncResult<Void> r){
             result = r;
+        }
+        public ExecuteMessage(final String operation,long id){
+            op = operation;
+            indentification = id;
         }
         public ExecuteMessage(final String operation){
             op = operation;
@@ -50,12 +62,18 @@ public class MysqlMessage {
     }
     
     static public class UpdateMessage{
-        
         private String op;
+        
         private AsyncResult<UpdateResult> result;
+        
+        public long indentification = -1;
         
         public UpdateMessage(final AsyncResult<UpdateResult> r){
             result = r;
+        }
+        public UpdateMessage(final String operation,long id){
+            op = operation;
+            indentification = id;
         }
         public UpdateMessage(final String operation){
             op = operation;
@@ -71,10 +89,17 @@ public class MysqlMessage {
      * */
     static public class CompositeMessage{
         private List<String> ops;
+        
         private AsyncResult<CompositeFuture> result;
+        
+        public long indentification = -1;
         
         public CompositeMessage(final AsyncResult<CompositeFuture> r){
             result = r;
+        }
+        public CompositeMessage(final List<String> operations,long id){
+            ops = operations;
+            indentification = id;
         }
         public CompositeMessage(final List<String> operations){
             ops = operations;

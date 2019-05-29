@@ -21,12 +21,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.AsyncSQLClient;
 import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.sql.SQLConnection;
+import lombok.extern.slf4j.Slf4j;
 /**
  * 这个类提供mysql的连接管理以及数据库请求的控制
  * @author memetao
  */
+@Slf4j
 public class MySqlVerticle extends AbstractVerticle {
-    private static int DEFAULT_POOL_SIZE = 10;
+    private static int DEFAULT_POOL_SIZE = 16;
     
     final public static String EXEC = "mysql-exec";
     
@@ -76,12 +78,9 @@ public class MySqlVerticle extends AbstractVerticle {
     
     @Override
     public void start() throws Exception {
-        //String host = Vertx.currentContext().config().getString("host_mysql");
         String host = null;
-        //Integer port = Vertx.currentContext().config().getInteger("port_mysql");
         Integer port = null;
-        //Integer connection_num = Vertx.currentContext().config().getInteger("connections_mysql");
-        int connection_num = 1;
+        int connection_num = DEFAULT_POOL_SIZE;
         if(host == null) {
             host = "127.0.0.1";
         }
@@ -94,7 +93,7 @@ public class MySqlVerticle extends AbstractVerticle {
                                                     put("username","memetao").put("password","123456").
                                                     put("maxPoolSize",connection_pool_size).
                                                     put("database","mcg").
-                                                    put("queryTimeout",1000);   /*查询操作，一秒超时*/ 
+                                                    put("queryTimeout",1000);   /*查询操作，一秒超时*/
         /*异步执行的情况下，一个mysql业务线程是不是就够了呢*/
         client = MySQLClient.createShared(vertx, mySQLClientConfig);
 
@@ -109,7 +108,7 @@ public class MySqlVerticle extends AbstractVerticle {
                 }
                 else {
                     connection_pool_size--;
-                    System.out.println("[error] get mysql connection fail!");
+                    log.error("get mysql connection fail!");
                 }
               });
         }
@@ -124,18 +123,27 @@ public class MySqlVerticle extends AbstractVerticle {
 
         vertx.eventBus().consumer(EXEC,message->{
             ExecuteMessage mess = (ExecuteMessage) message.body();
+            if(mess.indentification != -1) {
+                log.debug("mysql verticle recived ExecuteMessage,identification:" + mess.indentification);
+            }
             tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,EXEC));
             schedule();
         });
         
         vertx.eventBus().consumer(UPDATE,message->{
             UpdateMessage mess = (UpdateMessage) message.body();
+            if(mess.indentification != -1) {
+                log.debug("mysql verticle recived UpdateMessage,identification:" + mess.indentification);
+            }
             tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,UPDATE));
             schedule();
         });
         
         vertx.eventBus().consumer(QUERY,message->{
             QueryMessage mess = (QueryMessage) message.body();
+            if(mess.indentification != -1) {
+                log.debug("mysql verticle recived QueryMessage,identification:" + mess.indentification);
+            }
             tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,QUERY));
             schedule();
         });
@@ -153,20 +161,28 @@ public class MySqlVerticle extends AbstractVerticle {
      * @param message 
      */
     private <T> void execute(SQLConnection conn,String op,Message<T> message) {
+        ExecuteMessage mess = (ExecuteMessage)(message.body());
+        if(mess.indentification != -1) {
+            log.debug("mysql execute:" + op + ",identification:" + mess.indentification);
+        }
         conn.execute(op, res->{
-            System.out.println("[info] mysql execute:" + op);
-             /*获取结果并返回*/
-             ExecuteMessage result = new ExecuteMessage(res);
-             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name()));
+            if(mess.indentification != -1) {
+                log.debug("mysql execute done" + ",identification:" + mess.indentification);
+            }
+            ExecuteMessage result = new ExecuteMessage(res);
+            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name()));
             reSchedule(conn);
         });
     }
     
     private <T> void query(SQLConnection conn,String op,Message<T> message) {
-        System.out.println("[info] mysql query:" + op);
+        QueryMessage mess = (QueryMessage)(message.body());
+        if(mess.indentification != -1) {
+            log.debug("mysql query:" + op + ",identification:" + mess.indentification);
+        }
         conn.query(op, res->{
-            if(res.failed()) {
-                System.out.println("[error] query failed");
+            if(mess.indentification != -1) {
+                log.debug("mysql query done" + ",identification:" + mess.indentification);
             }
             QueryMessage result = new QueryMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name()));
@@ -175,8 +191,14 @@ public class MySqlVerticle extends AbstractVerticle {
     }
     
     private <T> void update(SQLConnection conn,String op,Message<T> message) {
-        System.out.println("[info] mysql update:" + op);
+        UpdateMessage mess = (UpdateMessage)(message.body());
+        if(mess.indentification != -1) {
+            log.debug("mysql update:" + op + ",identification:" + mess.indentification);
+        }
         conn.update(op, res->{
+            if(mess.indentification != -1) {
+                log.debug("mysql update done" + ",identification:" + mess.indentification);
+            }
             UpdateMessage result = new UpdateMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name()));
             reSchedule(conn);
@@ -191,7 +213,7 @@ public class MySqlVerticle extends AbstractVerticle {
      */
     /*FIXME:当前的实现只支持update操作*/
     private <T> void sql_transaction(SQLConnection conn,List<String> ops,Message<T> message) {
-        System.out.println("[info] mysql transaction:\n" + ops);
+        log.info("mysql transaction:\n" + ops);
         List<Future<Void>> futures = new ArrayList<Future<Void>>();
         Future<Void> f_b =  Future.future();
         /**准备事务*/
@@ -240,7 +262,10 @@ public class MySqlVerticle extends AbstractVerticle {
     private void schedule() {
         
         SQLConnection conn = null;
-        
+        log.debug("mysqlverticle schedule...." + 
+                    ",current tasks queue size:" + tasks.size() + 
+                    ",idle conn:" + connections_idle.size() + 
+                    ",busy conns:" + connections_busy.size());
         if(connections_idle.size() > 0 && (tasks_transaction.size() > 0 || tasks.size() > 0 )) {
             //FIXME: 获取空闲连接(取最近刚活动过的)
             conn = connections_idle.get(connections_idle.size()-1);
@@ -250,7 +275,6 @@ public class MySqlVerticle extends AbstractVerticle {
         else {
             return;
         }
-
         long latest_access_tasks = Long.MAX_VALUE;
         long latest_access_transaction = Long.MAX_VALUE;
         if( tasks.size() > 0) {

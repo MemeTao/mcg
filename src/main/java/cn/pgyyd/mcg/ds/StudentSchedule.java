@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-
 import cn.pgyyd.mcg.constant.McgConst;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class StudentSchedule {
     private static final int LESSONS_PER_Day = McgConst.LESSONS_PER_Day;
     
@@ -25,7 +26,7 @@ public class StudentSchedule {
                 a[i] = INVALID_COURSE_ID;
             }
         }
-        System.out.println(dump());
+        //log.info(dump());
     }
     
     public int stduentId() {
@@ -36,12 +37,11 @@ public class StudentSchedule {
      * @param course
      */
     public void add_course(CourseSchedule course) {
-        System.out.println("[info] add lesson...");
-        System.out.println(course.dump());
+        //log.info("student" +student_id +"schedule add lesson...");
         for(Entry<Integer,ArrayList<Integer>> lesson : course.lessons().entrySet()) {
             add_lesson(course.courseId(),lesson.getKey(),lesson.getValue());
         }
-        System.out.println(dump());
+        //log.info("course schedule update.\n" + dump());
     }
     
     public void add_lesson(final int course_id,final int day,ArrayList<Integer> lessons) {

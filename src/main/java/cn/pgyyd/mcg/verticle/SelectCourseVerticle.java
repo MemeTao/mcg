@@ -13,15 +13,23 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryOptions;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
     static public String SELECT = "course-select";
-    private long seq_generator = 0;
+    
+    //private AtomicInteger seq_generator = new AtomicInteger(0);
+    
+    private static long num_success = 0;
+    private static long num_failed = 0;
+    private static AtomicInteger temp_id = new AtomicInteger(0);
     
     private class Task {
         final private static String ING = "ing";
@@ -62,7 +70,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         }
         
         public void go() {
-            System.out.println("[info] select course...");
+            log.info("SelectCourse Task running,identification:" + task.sequence);
             int student_id = task.request.student_id;
             ArrayList<Integer> courses_wanted = task.request.courses;
             
@@ -74,43 +82,38 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
             f_end.setHandler(res->{
                 //TODO:通知外面已成功的课程id
                if(res.failed()) {
-                   System.out.println("[warning] select course failed");
+                   log.error("select course failed,student_id:" + student_id + ",courses_wanted:" + courses_wanted);
                }
-               else {
-                   System.out.println("[info] select course done! successed_courses:" + successed_courses);
-               }
+               log.info("select course operator done!identification:" + task.sequence + 
+                       ",success:" + num_success + 
+                       ",failed:"  + num_failed +
+                       ",current time:" + System.currentTimeMillis());
                handler.handle(successed_courses);
             });
             //1.根据提交的课程id列表去获取这些课程的时间信息,成功后调用f_get_courses_schedule.completer()
-            mysqlProxy.getCourseSchedule(courses_wanted,f_get_courses_schedule.completer());
+            //FIXME: 这次查询可以和学生课表放在一块查
+            mysqlProxy.getCourseSchedule(courses_wanted,task.sequence,f_get_courses_schedule.completer());
             
             f_get_courses_schedule.compose(v->{ //操作1完成后(成功)，会来到这里
                 courses_schdule = v;
-                //for debug
-                for(Entry<Integer,CourseSchedule> entry :courses_schdule.entrySet()) {
-                    if(!entry.getValue().dump().isEmpty()) {
-                        System.out.println("[info] course: " + entry.getKey());
-                        System.out.println(entry.getValue().dump());
-                    }
+                if(courses_schdule.size() != courses_wanted.size()) {
+                    log.error("getCourseSchedule wrong!");
+                    //TODO: 不要让下面的操作继续执行
                 }
                 Future<StudentSchedule> f2 = Future.future();
                 //2.根据学生id获取该学生的课表时间信息
-                mysqlProxy.getStudentCourses(student_id,f2.completer());
+                mysqlProxy.getStudentCourses(student_id,task.sequence,f2.completer());
                 return f2;
             }).compose(v->{
                 student_schdule = v;
-                System.out.println("[debug] " + student_schdule.dump());
-                System.out.println("[info] check whether course time conflict or not...");
                 ArrayList<Integer> valid_course_ids = new ArrayList<Integer>();
                 //3.遍历提交的选修课，检查时间是否冲突
                 for(Entry<Integer, CourseSchedule> entry : courses_schdule.entrySet()) {
-                    System.out.println("[info] check course(" + entry.getKey() + ")...");
                     CourseSchedule course_schedule = entry.getValue(); 
                     if(!student_schdule.confict(course_schedule)) {
                         valid_course_ids.add(entry.getKey());
                     }
                 }
-                System.out.println("[info] valid course(s): " + valid_course_ids);
                 ArrayList<Future<Void>> fs = new ArrayList<Future<Void>>();
                 //遍历不冲突的课程，进行选课
                 for(int course_id : valid_course_ids) {
@@ -118,21 +121,26 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                     fs.add(f);
                     //4. 对该门课的剩余人数进行更新
                     //FIXME：这里也许需要用事务保证
-                    mysqlProxy.updateRemain(course_id,-1,res->{
+                    //+1
+                    mysqlProxy.updateRemain(course_id,1,task.sequence,res->{
                         if(res.succeeded()) {
+                            num_success ++;
                             //往该学生课表中增加课程记录
                             //FIXME:这个操作或许需要分布式锁
-                            mysqlProxy.addElectiveCourse(student_id,course_id,res_add->{
+                            int global = 10000 + temp_id.addAndGet(1);
+                            mysqlProxy.addElectiveCourse(global,course_id,task.sequence,res_add->{
                                 if(res_add.succeeded()) {
                                     successed_courses.add(course_id);  //直到这里才算成功
                                 }else {
-                                    mysqlProxy.updateRemain(course_id, 1,res_dec->{
-                                        //不可能失败，除非数据库死了
-                                    });
+//                                    mysqlProxy.updateRemain(course_id, 1,res_dec->{
+//                                        //不可能失败，除非数据库死了
+//                                    });
+                                    log.error("addElectiveCourse failed!");
                                 }
                                 f.complete(); 
                             });
                         }else {
+                            num_failed ++;
                             f.fail("updateRemain failed!"); 
                         }
                     });
@@ -145,7 +153,6 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                     }
                 });
             },f_end);
-            
         }
     }
 
@@ -158,11 +165,9 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         
         vertx.eventBus().consumer(SELECT, message->{
             SelectCourseMessage mess = (SelectCourseMessage) message.body();
-            System.out.println("[info] select course verticle recived mess,student id " 
-                                + mess.request().student_id + ",courses list:" + mess.request().courses);
             final long job_id = JobIDGenerator.getInstance().generate();
-            final long seq = seq_generator ++;
-            Task task =  new Task(mess.request(), seq, job_id);
+            //final long seq = seq_generator ++;
+            Task task =  new Task(mess.request(), mess.id(), job_id);  //sequence 直接取自request_id
             jobs.put(task.sequence, task);
             set_task_status(task,Task.ING,res->{
                 if(res) {
@@ -185,9 +190,9 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         if(jobs.size() <= 0) {
             return;
         }
-        
         Long key = jobs.firstKey();
         Task t = jobs.get(key);
+        log.info("current task queue size:" + jobs.size() + ",schedule...identification:" + t.sequence);
         jobs.remove(key);       //立即删除
         doSelectCourse(t,res->{
             /*FIXME:选课结果可能是部分成功，在redis中需要另外一个地方来记录已成功课程s*/

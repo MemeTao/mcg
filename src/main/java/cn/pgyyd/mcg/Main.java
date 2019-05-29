@@ -2,7 +2,6 @@ package cn.pgyyd.mcg;
 
 import cn.pgyyd.mcg.verticle.MainVerticle;
 import cn.pgyyd.mcg.verticle.MySqlVerticle;
-import cn.pgyyd.mcg.verticle.RedisClientVerticle;
 import cn.pgyyd.mcg.verticle.SelectCourseVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -10,11 +9,13 @@ import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Main {
     public static void main(String[] args) {
+        log.info("System starting...");
         Vertx vertx = Vertx.vertx();
-
         ConfigStoreOptions storeOptions = new ConfigStoreOptions().setType("file").setConfig(new JsonObject().put("path", "config.json"));
         ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions().addStore(storeOptions);
         ConfigRetriever retriever =  ConfigRetriever.create(vertx, retrieverOptions);

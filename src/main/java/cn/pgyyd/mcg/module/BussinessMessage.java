@@ -10,9 +10,12 @@ public class BussinessMessage {
         
         private SelectCourseResponse response;
         
-        public SelectCourseMessage(SelectCourseRequest r) {
+        private long id;
+        
+        public SelectCourseMessage(SelectCourseRequest r,long id) {
             request = r;
             response = null;
+            this.id = id;
         }
         public SelectCourseMessage(SelectCourseResponse r) {
             request = null;
@@ -27,6 +30,9 @@ public class BussinessMessage {
         }
         public SelectCourseResponse response() {
             return response;
+        }
+        public long id() {
+            return id;
         }
     }
 }
