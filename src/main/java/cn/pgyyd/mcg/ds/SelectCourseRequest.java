@@ -3,10 +3,10 @@ package cn.pgyyd.mcg.ds;
 import java.util.ArrayList;
 
 public class SelectCourseRequest {
-    public SelectCourseRequest(int student_id, ArrayList<Integer> courses) {
+    public SelectCourseRequest(String student_id, ArrayList<String> courses) {
         this.student_id = student_id;
         this.courses = courses;
     }
-    public int student_id;
-    public ArrayList<Integer> courses;
+    public String student_id;
+    public ArrayList<String> courses;
 }

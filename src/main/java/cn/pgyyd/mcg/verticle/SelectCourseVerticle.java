@@ -56,25 +56,25 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
     
     private class SelectCourseOperator{
         private Task task;
-        private Handler<ArrayList<Integer>> handler;
+        private Handler<ArrayList<String>> handler;
         //提交的待选课课程id  key: 课程id，value: 该课程的课程时间
-        HashMap<Integer,CourseSchedule> courses_schdule = null;
+        HashMap<String,CourseSchedule> courses_schdule = null;
         //该学生课程表(除本次选修课外)
         StudentSchedule student_schdule = null;
         
-        ArrayList<Integer> successed_courses = new ArrayList<Integer>();
+        ArrayList<String> successed_courses = new ArrayList<String>();
         
-        public SelectCourseOperator(Task t, Handler<ArrayList<Integer>> h) {
+        public SelectCourseOperator(Task t, Handler<ArrayList<String>> h) {
             task = t;
             handler = h;
         }
         
         public void go() {
             log.info("SelectCourse Task running,identification:" + task.sequence);
-            int student_id = task.request.student_id;
-            ArrayList<Integer> courses_wanted = task.request.courses;
+            String student_id = task.request.student_id;
+            ArrayList<String> courses_wanted = task.request.courses;
             
-            Future<HashMap<Integer,CourseSchedule>> f_get_courses_schedule = Future.future();
+            Future<HashMap<String,CourseSchedule>> f_get_courses_schedule = Future.future();
             
             Future<Boolean> f_end = Future.future();
             
@@ -106,9 +106,9 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                 return f2;
             }).compose(v->{
                 student_schdule = v;
-                ArrayList<Integer> valid_course_ids = new ArrayList<Integer>();
+                ArrayList<String> valid_course_ids = new ArrayList<String>();
                 //3.遍历提交的选修课，检查时间是否冲突
-                for(Entry<Integer, CourseSchedule> entry : courses_schdule.entrySet()) {
+                for(Entry<String, CourseSchedule> entry : courses_schdule.entrySet()) {
                     CourseSchedule course_schedule = entry.getValue(); 
                     if(!student_schdule.confict(course_schedule)) {
                         valid_course_ids.add(entry.getKey());
@@ -116,7 +116,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                 }
                 ArrayList<Future<Void>> fs = new ArrayList<Future<Void>>();
                 //遍历不冲突的课程，进行选课
-                for(int course_id : valid_course_ids) {
+                for(String course_id : valid_course_ids) {
                     Future<Void> f = Future.future();
                     fs.add(f);
                     //4. 对该门课的剩余人数进行更新
@@ -125,9 +125,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                     mysqlProxy.updateRemain(course_id,1,task.sequence,res->{
                         if(res.succeeded()) {
                             num_success ++;
-                            //往该学生课表中增加课程记录
-                            //FIXME:这个操作或许需要分布式锁
-                            int global = 10000 + temp_id.addAndGet(1);
+                            String global = "" + 10000 + temp_id.addAndGet(1);
                             mysqlProxy.addElectiveCourse(global,course_id,task.sequence,res_add->{
                                 if(res_add.succeeded()) {
                                     successed_courses.add(course_id);  //直到这里才算成功
@@ -205,7 +203,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
             schedule();
         });
     }
-    private void doSelectCourse(Task task, Handler<ArrayList<Integer>> handler) {
+    private void doSelectCourse(Task task, Handler<ArrayList<String>> handler) {
         /**
          * java中的lambda表达式无法修改外部变量，所以用类的形式封装
          */

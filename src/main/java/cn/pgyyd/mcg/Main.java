@@ -1,5 +1,6 @@
 package cn.pgyyd.mcg;
 
+import cn.pgyyd.mcg.module.DBSelector;
 import cn.pgyyd.mcg.verticle.MainVerticle;
 import cn.pgyyd.mcg.verticle.MySqlVerticle;
 import cn.pgyyd.mcg.verticle.SelectCourseVerticle;
@@ -15,7 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 public class Main {
     public static void main(String[] args) {
         log.info("System starting...");
+        //TODO:一些需要提前初始化的任务
         Vertx vertx = Vertx.vertx();
+        
+        new DBSelector().init(vertx);
+        
         ConfigStoreOptions storeOptions = new ConfigStoreOptions().setType("file").setConfig(new JsonObject().put("path", "config.json"));
         ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions().addStore(storeOptions);
         ConfigRetriever retriever =  ConfigRetriever.create(vertx, retrieverOptions);

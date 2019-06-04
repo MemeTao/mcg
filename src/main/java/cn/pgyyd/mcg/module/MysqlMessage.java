@@ -6,12 +6,16 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
-public class MysqlMessage {
+/**
+ * 写的比较乱，暂时先这样实现
+ * @author memetao
+ *
+ */
+public class MysqlMessage{
     /**
      * 不使用模板，明确区分每一个操作类型
      */
-    static public class QueryMessage{
+    static public class QueryMessage extends DBMessage{
         private String op;
         
         private AsyncResult<ResultSet> result;
@@ -36,7 +40,7 @@ public class MysqlMessage {
         }
     }
     
-    static public class ExecuteMessage{
+    static public class ExecuteMessage extends DBMessage{
         private String op;
         
         private AsyncResult<Void> result;
@@ -61,7 +65,7 @@ public class MysqlMessage {
         }
     }
     
-    static public class UpdateMessage{
+    static public class UpdateMessage extends DBMessage{
         private String op;
         
         private AsyncResult<UpdateResult> result;
@@ -87,7 +91,7 @@ public class MysqlMessage {
     }
     /**暂且这样吧
      * */
-    static public class CompositeMessage{
+    static public class CompositeMessage extends DBMessage{
         private List<String> ops;
         
         private AsyncResult<CompositeFuture> result;

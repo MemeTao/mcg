@@ -3,14 +3,12 @@ package cn.pgyyd.mcg.module;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
 
 import cn.pgyyd.mcg.ds.CourseSchedule;
 import cn.pgyyd.mcg.ds.StudentSchedule;
 import cn.pgyyd.mcg.verticle.MySqlVerticle;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -40,10 +38,42 @@ public class MysqlProxy {
     
     private static String UPDATE = MySqlVerticle.UPDATE;
     
-    private static String TRANSACTION = MySqlVerticle.TRANSACTION;
+    //private static String TRANSACTION = MySqlVerticle.TRANSACTION;
     
     private Vertx vertx;
     
+    static private DBSelector selector; 
+    
+    static private boolean initialized = false;
+    
+    public MysqlProxy(Vertx v){
+        vertx = v;
+        //FIXME: 多线程同时初始化的问题?
+        if(!initialized) {
+            selector = new DBSelector();
+            initialized = true;
+        }
+    }
+    private int[] stringConvertInt(String value) { 
+        int[] intArr = new int[0]; 
+        if(isNull(value)){ 
+            intArr = new int[0]; 
+        }
+        else{ 
+            String[] valueArr = value.split(","); 
+            intArr = new int[valueArr.length]; 
+            for (int i = 0; i < valueArr.length; i++) { 
+                intArr[i] = Integer.parseInt(valueArr[i]); 
+            } 
+        } 
+        return intArr; 
+    } 
+    private  boolean isNull(String param){ 
+        if(param==null||param.isEmpty()||param.trim().equals("")) 
+            return true; 
+        return false; 
+    }
+
     private class Failed<T> implements  AsyncResult<T>{
         @Override
         public T result() {
@@ -100,74 +130,65 @@ public class MysqlProxy {
         }
         ;
     }
-    
-    public MysqlProxy(Vertx v){
-        vertx = v;
-    }
-    /**
-     * 示例：获取课程表中的所有课程id
-     * @param reply
-     */
+
     //FIXME: 使用AsyncResult封装HashSet<Integer>
     public void getCourseIdList(Handler<HashSet<Integer>> reply) {
-        String sql = "select courseId from mcg_course";
-        query(sql,res->{
-            HashSet<Integer> ids = new HashSet<Integer>();
-            if( res.succeeded() ) {
-                String column_name = res.result().getColumnNames().get(0);
-                for(JsonObject obj : res.result().getRows()) {
-                    ids.add(obj.getInteger(column_name));
-                }
-            }
-            reply.handle(ids);
-        });
+//        String sql = "select courseId from mcg_course";
+//        query(sql,res->{
+//            HashSet<Integer> ids = new HashSet<Integer>();
+//            if( res.succeeded() ) {
+//                String column_name = res.result().getColumnNames().get(0);
+//                for(JsonObject obj : res.result().getRows()) {
+//                    ids.add(obj.getInteger(column_name));
+//                }
+//            }
+//            reply.handle(ids);
+//        });
     }
     /**
      * 根据课程id列表获取课程时间信息
      * @param course_ids
      * @param reply  key:课程id  value:该课程的时间
+     * @note: 课程的基本信息都在一个数据库(m0)中
      */
-    public void getCourseSchedule(ArrayList<Integer> course_ids,long identification,Handler<AsyncResult<HashMap<Integer,CourseSchedule>>> reply) {
+    public void getCourseSchedule(ArrayList<String> course_ids,long identification,Handler<AsyncResult<HashMap<String,CourseSchedule>>> reply) {
         if(identification != -1) {
             log.debug("try getCourseSchedule,identification:" + identification);
         }
         if(course_ids.size() == 0 ) {
-            reply.handle(new Failed<HashMap<Integer,CourseSchedule>>());
+            reply.handle(new Failed<HashMap<String,CourseSchedule>>());
         }
-        HashMap<Integer,CourseSchedule> infos = new HashMap<Integer,CourseSchedule>();
+        HashMap<String,CourseSchedule> infos = new HashMap<String,CourseSchedule>();
         String ids = new String("(");
-        for(int course_id : course_ids) {
+        for(String course_id : course_ids) {
             ids += course_id;
             ids += ",";
         }
         ids = ids.substring(0, ids.length()-1);
         ids += ")";
         
-        String sql = "select * from mcg_course_timerange where courseId in " + ids;
-        query(sql,identification,res->{
-            if( res != null && res.succeeded() )
-            {
-                //long cost = System.currentTimeMillis() - t1;
-                //log.info("mysql proxy getCourseSchedule cost:" + cost + "ms");
+        String sql = "select * from mcg_course_schedule where code in " + ids;
+        String hash = selector.main_db_hash();
+        query(sql,hash,identification,res-> {
+            if( res != null && res.succeeded()) {
                 ResultSet result = res.result();
                 //会存在多行结果
                 for(JsonObject obj : result.getRows()) {
-                    final int course_id = obj.getInteger(result.getColumnNames().get(1));
-                    final int day = obj.getInteger(result.getColumnNames().get(2));
-                    final int start = obj.getInteger(result.getColumnNames().get(3));
-                    final int end = obj.getInteger(result.getColumnNames().get(4));
-                    CourseSchedule course = new CourseSchedule(course_id);
-                    if(!infos.containsKey(course_id)) {
-                        infos.put(course_id, course);
+                    final String code = obj.getString(result.getColumnNames().get(1));
+                    final int week = obj.getInteger(result.getColumnNames().get(2));
+                    final int day = obj.getInteger(result.getColumnNames().get(3));
+                    int[] lesssons  = stringConvertInt(obj.getString(result.getColumnNames().get(4)));
+                    CourseSchedule course = new CourseSchedule(code);
+                    if(!infos.containsKey(code)) {
+                        infos.put(code, course);
                     }
-                    course = infos.get(course_id);
-                    course.add_info(day, start,end);
+                    course = infos.get(code);
+                    course.add_info(week,day, lesssons);
                 }
-                reply.handle(new Success<HashMap<Integer,CourseSchedule>>(infos));
+                reply.handle(new Success<HashMap<String, CourseSchedule>>(infos));
             }
-            else 
-            {
-                reply.handle(new Failed<HashMap<Integer,CourseSchedule>>());
+            else{
+                reply.handle(new Failed<HashMap<String, CourseSchedule>>());
             }
         });
     }
@@ -176,7 +197,7 @@ public class MysqlProxy {
      * @param course_ids
      * @param reply
      */
-    public void getCourseSchedule(ArrayList<Integer> course_ids,Handler<AsyncResult<HashMap<Integer,CourseSchedule>>> reply) {
+    public void getCourseSchedule(ArrayList<String> course_ids,Handler<AsyncResult<HashMap<String,CourseSchedule>>> reply) {
         getCourseSchedule(course_ids,-1,res->{
             reply.handle(res);
         });
@@ -186,13 +207,13 @@ public class MysqlProxy {
      * @param course_id
      * @param reply
      */
-    public void getCourseSchedule(Integer course_id,long identification,Handler<AsyncResult<CourseSchedule>> reply) {
-        ArrayList<Integer> course_ids = new ArrayList<Integer>();
+    public void getCourseSchedule(String course_id,long identification,Handler<AsyncResult<CourseSchedule>> reply) {
+        ArrayList<String> course_ids = new ArrayList<String>();
         course_ids.add(course_id);
         getCourseSchedule(course_ids,identification,res->{
             if(res.succeeded()) {
                 CourseSchedule schedule = null;
-                for(Entry <Integer,CourseSchedule> it :  res.result().entrySet()) {
+                for(Entry <String,CourseSchedule> it : res.result().entrySet()) {
                     schedule = it.getValue();
                     break;
                 }
@@ -203,7 +224,7 @@ public class MysqlProxy {
         });
     }
     
-    public void getCourseSchedule(Integer course_id,Handler<AsyncResult<CourseSchedule>> reply) {
+    public void getCourseSchedule(String course_id,Handler<AsyncResult<CourseSchedule>> reply) {
         getCourseSchedule(course_id,-1,res->{
             reply.handle(res);
         });
@@ -213,30 +234,28 @@ public class MysqlProxy {
      * @param student_id
      * @param reply
      */
-    public void getStudentCourses(int student_id,long identification,Handler<AsyncResult<StudentSchedule>> reply) {
+    public void getStudentCourses(String student_id,long identification,Handler<AsyncResult<StudentSchedule>> reply) {
         if(identification != -1) {
             log.debug("try getStudentCourses,identification:" + identification);
         }
-        //long t1 = System.currentTimeMillis();
         StudentSchedule infos = new StudentSchedule(student_id);
-        //获取该学生有哪些课程
-        String sql = "select courseId from mcg_student_course where studentId = " + student_id;
-        query(sql,identification,res->{
+        String sql = "select code from mcg_student_course where student = " + student_id;
+        String hash1 = selector.hash_from_student_id(student_id);
+        query(sql, hash1, identification, res->{
             if( res != null && res.succeeded() ) {
                 ResultSet result = res.result();
-                //会存在多行结果
-                ArrayList<Integer> course_ids = new ArrayList<Integer>();
+                ArrayList<String> course_ids = new ArrayList<String>();
                 for(JsonObject obj : result.getRows()) {
-                    final int course_id = obj.getInteger(result.getColumnNames().get(0));
+                    final String course_id = obj.getString(result.getColumnNames().get(0));
                     course_ids.add(course_id);
                 }
-                getCourseSchedule(course_ids,identification,course_res->{
+                getCourseSchedule(course_ids,identification, course_res->{
                     if(identification != -1) {
                         log.debug("get student course done,identification:" + identification);
                     }
                     if(course_res.succeeded()) {
-                        HashMap<Integer,CourseSchedule> courses_schedule = course_res.result();
-                        for(Entry<Integer,CourseSchedule> item : courses_schedule.entrySet()) {
+                        HashMap<String,CourseSchedule> courses_schedule = course_res.result();
+                        for(Entry<String,CourseSchedule> item : courses_schedule.entrySet()) {
                             infos.add_course(item.getValue());
                         }
                         reply.handle(new Success<StudentSchedule>(infos));
@@ -248,7 +267,7 @@ public class MysqlProxy {
         });
     }
     
-    public void getStudentCourses(int student_id, Handler<AsyncResult<StudentSchedule>> reply) {
+    public void getStudentCourses(String student_id, Handler<AsyncResult<StudentSchedule>> reply) {
         getStudentCourses(student_id,-1,res->{
             reply.handle(res);
         });
@@ -259,22 +278,22 @@ public class MysqlProxy {
      * @param num : 你懂得
      * @param reply  如果写入，则返回true，否则返回false
      */
-    public void updateRemain(int course_id, int num, long identification,Handler<AsyncResult<Boolean>> reply) {
+    public void updateRemain(String course_id, int num, long identification,Handler<AsyncResult<Boolean>> reply) {
         if(identification != -1) {
             log.debug("try updateRemain,identification:" + identification);
         }
-        //long t1 = System.currentTimeMillis();
         String sql = new String();
         if(num < 0) {
             num = -num;
-            sql = "update mcg_course_remain set remain = remain - " + num
-                                + " where courseId = " + course_id +
-                                  " and remain > 0";
+            sql = "update mcg_course_remain set number = number - " + num
+                                + " where code = " + course_id +
+                                  " and number > 0";
         }else {
-            sql = "update mcg_course_remain set remain = remain + " + num
-                    + " where courseId = " + course_id ;
+            sql = "update mcg_course_remain set number = number + " + num
+                    + " where code = " + course_id ;
         }
-        update(sql,identification,res->{
+        String hash = selector.hash_from_course_code(course_id);
+        update(sql, hash, identification, res->{
             if(identification != -1) {
                 log.debug("updateRemain done,identification:" + identification);
             }
@@ -287,10 +306,11 @@ public class MysqlProxy {
             }
         });
     }
-    public void updateRemain(int course_id, int num,Handler<AsyncResult<Boolean>> reply) {
-        updateRemain(course_id, num,-1, res->{
+    
+    public void updateRemain(String course_id, int num,Handler<AsyncResult<Boolean>> reply) {
+        updateRemain(course_id, num, -1, res->{
             reply.handle(res);
-        }) ;
+        });
     }
     /**
      * 向某学生的选课课课表中，增加信息
@@ -298,19 +318,19 @@ public class MysqlProxy {
      * @param course_id 
      * @param reply
      */
-    public void addElectiveCourse(int student_id,int course_id,long identification,Handler<AsyncResult<Boolean>> reply) {
+    public void addElectiveCourse(String student_id,String course_id,long identification,Handler<AsyncResult<Boolean>> reply) {
         if(identification != -1) {
             log.debug("try addElectiveCourse,identification:" + identification);
         }
         String sql = "insert into mcg_student_course "
-                + "(studentId,"
-                + "courseId)"
+                + "(student,"
+                + "code)"
                 +  " values "
                 +                "(" 
                 +   student_id +  "," 
                 +   course_id +  ")";
-        
-        update(sql,identification,res->{
+        String hash = selector.hash_from_student_id(student_id);
+        update(sql, hash, identification, res->{
             if(identification != -1) {
                 log.debug("add elective course done,identification:" + identification);
             }
@@ -321,8 +341,8 @@ public class MysqlProxy {
             }
         });
     }
-    public void addElectiveCourse(int student_id,int course_id,Handler<AsyncResult<Boolean>> reply) {
-        addElectiveCourse( student_id,course_id,res->{
+    public void addElectiveCourse(String student_id,String course_id,Handler<AsyncResult<Boolean>> reply) {
+        addElectiveCourse( student_id, course_id, -1, res->{
             reply.handle(res);
         });
     }
@@ -330,25 +350,29 @@ public class MysqlProxy {
     /*********************************************分界线********************************************************/
     /********************************************基础代码*******************************************************/
     
-    public void execute(String op,Handler<AsyncResult<Void>> reply) {
+    public void execute(String op,String hash,Handler<AsyncResult<Void>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.ExecuteMessage>>> handler = res ->{
             AsyncResult<Void> result = res.result().body().result();
             reply.handle(result);
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name());
-        vertx.eventBus().send(EXEC,new MysqlMessage.ExecuteMessage(op),options,handler);
+        MysqlMessage.ExecuteMessage message = new MysqlMessage.ExecuteMessage(op);
+        message.set_hash(hash);
+        vertx.eventBus().send(EXEC,message,options,handler);
     }
     
-    public void execute(String op,long identification,Handler<AsyncResult<Void>> reply) {
+    public void execute(String op,String hash,long identification,Handler<AsyncResult<Void>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.ExecuteMessage>>> handler = res ->{
             AsyncResult<Void> result = res.result().body().result();
             reply.handle(result);
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name());
-        vertx.eventBus().send(EXEC,new MysqlMessage.ExecuteMessage(op,identification),options,handler);
+        MysqlMessage.ExecuteMessage message = new MysqlMessage.ExecuteMessage(op,identification);
+        message.set_hash(hash);
+        vertx.eventBus().send(EXEC,message,options,handler);
     }
     
-    public void query(String op,Handler<AsyncResult<ResultSet>> reply) {
+    public void query(String op,String hash,Handler<AsyncResult<ResultSet>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.QueryMessage>>> handler = res ->{
             if(res.succeeded()) {
                 AsyncResult<ResultSet> result = res.result().body().result();
@@ -358,10 +382,12 @@ public class MysqlProxy {
             }
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name());
-        vertx.eventBus().send(QUERY,new MysqlMessage.QueryMessage(op),options,handler);
+        MysqlMessage.QueryMessage message = new MysqlMessage.QueryMessage(op);
+        message.set_hash(hash);
+        vertx.eventBus().send(QUERY,message,options,handler);
     }
     
-    public void query(String op,long identification,Handler<AsyncResult<ResultSet>> reply) {
+    public void query(String op,String hash,long identification,Handler<AsyncResult<ResultSet>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.QueryMessage>>> handler = res ->{
             if(res.succeeded()) {
                 AsyncResult<ResultSet> result = res.result().body().result();
@@ -371,35 +397,40 @@ public class MysqlProxy {
             }
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name());
-        vertx.eventBus().send(QUERY,new MysqlMessage.QueryMessage(op,identification),options,handler);
+        MysqlMessage.QueryMessage message = new MysqlMessage.QueryMessage(op,identification);
+        message.set_hash(hash);
+        vertx.eventBus().send(QUERY,message,options,handler);
     }
     //update
-    public void update(String op,Handler<AsyncResult<UpdateResult>> reply) {
+    public void update(String op,String hash,Handler<AsyncResult<UpdateResult>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.UpdateMessage>>> handler = res ->{
             AsyncResult<UpdateResult> result = res.result().body().result();
             reply.handle(result);
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name());
-        vertx.eventBus().send(UPDATE,new MysqlMessage.UpdateMessage(op),options,handler);
+        MysqlMessage.UpdateMessage message = new MysqlMessage.UpdateMessage(op);
+        message.set_hash(hash);
+        vertx.eventBus().send(UPDATE,message,options,handler);
     }
 
-    public void update(String op,long identification,Handler<AsyncResult<UpdateResult>> reply) {
+    public void update(String op,String hash,long identification,Handler<AsyncResult<UpdateResult>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.UpdateMessage>>> handler = res ->{
             AsyncResult<UpdateResult> result = res.result().body().result();
             reply.handle(result);
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name());
-        vertx.eventBus().send(UPDATE,new MysqlMessage.UpdateMessage(op,identification),options,handler);
+        MysqlMessage.UpdateMessage message = new MysqlMessage.UpdateMessage(op,identification);
+        vertx.eventBus().send(UPDATE,message,options,handler);
     }
     /**不直接提供事务接口，而以具体的业务接口的形式给出
      * 底层负责“失败回滚”操作
      * */
-    private void transaction(List<String> ops,Handler<AsyncResult<CompositeFuture>> reply) {
-        Handler<AsyncResult<Message<MysqlMessage.CompositeMessage>>> handler = res ->{
-            AsyncResult<CompositeFuture> result = res.result().body().result();
-            reply.handle(result);
-        };
-        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlComposite().name());
-        vertx.eventBus().send(TRANSACTION,new MysqlMessage.CompositeMessage(ops),options,handler);
-    }
+//    private void transaction(List<String> ops,Handler<AsyncResult<CompositeFuture>> reply) {
+//        Handler<AsyncResult<Message<MysqlMessage.CompositeMessage>>> handler = res ->{
+//            AsyncResult<CompositeFuture> result = res.result().body().result();
+//            reply.handle(result);
+//        };
+//        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlComposite().name());
+//        vertx.eventBus().send(TRANSACTION,new MysqlMessage.CompositeMessage(ops),options,handler);
+//    }
 }

@@ -1,10 +1,10 @@
 package cn.pgyyd.mcg.verticle;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import cn.pgyyd.mcg.module.DBSelector;
 import cn.pgyyd.mcg.module.MysqlMessage.CompositeMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.ExecuteMessage;
 import cn.pgyyd.mcg.module.MysqlMessage.QueryMessage;
@@ -13,8 +13,6 @@ import cn.pgyyd.mcg.module.UserMessageCodec;
 
 import java.util.TreeMap;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -24,10 +22,35 @@ import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
 /**
  * 这个类提供mysql的连接管理以及数据库请求的控制
+ * FIXME:暂时取消事务操作的支持
  * @author memetao
  */
 @Slf4j
 public class MySqlVerticle extends AbstractVerticle {
+    /*简单的包裹一下task
+     * */
+    class TaskOp{
+        public TaskOp(final String t,Message<Object> m,final String operation,final String h) {
+            task = t;
+            mess = m;
+            op = operation;
+            hash = h;
+        }
+        final String task;
+        final String op;
+        final String hash;
+        Message<Object> mess;
+    }
+    class TaskTransaction{
+        public TaskTransaction(final List<String> ts,Message<Object> m) {
+            tasks = ts;
+            mess = m;
+        }
+        final List<String> tasks;
+        final Message<Object> mess;
+        String hash;
+    }
+    
     private static int DEFAULT_POOL_SIZE = 16;
     
     final public static String EXEC = "mysql-exec";
@@ -39,34 +62,15 @@ public class MySqlVerticle extends AbstractVerticle {
     
     public static String TRANSACTION = "mysql-transaction";
     
-    private int connection_pool_size = DEFAULT_POOL_SIZE;
+    private TreeMap<String/*hash*/,AsyncSQLClient> clients;
     
-    private List<SQLConnection> connections_idle;
+    //private TreeMap<AsyncSQLClient/*client*/,SQLConnection> connections;
     
-    private List<SQLConnection> connections_busy;
+    private TreeMap<AsyncSQLClient/*client*/,LinkedList<SQLConnection>> idle_connections;
     
-    private AsyncSQLClient client;
+    private TreeMap<AsyncSQLClient/*client*/,LinkedList<SQLConnection>> busy_connections;  //仅仅是为了记录、debug
     
-    /*简单的包裹一下task
-     * */
-    class TaskOp{
-        public TaskOp(final String t,Message<Object> m,final String operation) {
-            task = t;
-            mess = m;
-            op = operation;
-        }
-        final String task;
-        final String op;
-        Message<Object> mess;
-    }
-    class TaskTransaction{
-        public TaskTransaction(final List<String> ts,Message<Object> m) {
-            tasks = ts;
-            mess = m;
-        }
-        final List<String> tasks;
-        final Message<Object> mess;
-    }
+    private TreeMap<SQLConnection,String> hashs;
     /**假设1纳秒自增一次，64位的整数也够执行584年
      * 好吧，297年
      * */
@@ -75,44 +79,48 @@ public class MySqlVerticle extends AbstractVerticle {
     
     private TreeMap<Long,TaskOp> tasks;
     private TreeMap<Long,TaskTransaction> tasks_transaction;
-    
     @Override
     public void start() throws Exception {
-        String host = null;
-        Integer port = null;
-        int connection_num = DEFAULT_POOL_SIZE;
-        if(host == null) {
-            host = "127.0.0.1";
-        }
-        
-        if(port == null) {
-            port = 3306;
-        }
-        
-        JsonObject mySQLClientConfig = new JsonObject().put("host", host).put("port",port).
-                                                    put("username","memetao").put("password","123456").
-                                                    put("maxPoolSize",connection_pool_size).
-                                                    put("database","mcg").
-                                                    put("queryTimeout",1000);   /*查询操作，一秒超时*/
-        /*异步执行的情况下，一个mysql业务线程是不是就够了呢*/
-        client = MySQLClient.createShared(vertx, mySQLClientConfig);
-
-        connections_idle = new LinkedList<SQLConnection>();
-        connections_busy = new LinkedList<SQLConnection>();
-        
-        for(int i = 0 ;i < connection_num; i++) {
-            client.getConnection(res -> {
-                if (res.succeeded()) {
-                    SQLConnection conn = res.result();
-                    connections_idle.add(conn);
+        TreeMap<String,JsonObject> hash_and_config = DBSelector.hashkey_and_db_configs(); //同步执行?
+        if(hash_and_config != null) {
+            clients = new TreeMap<String/*hash*/,AsyncSQLClient>();
+            //connections = new TreeMap<AsyncSQLClient/*client*/,SQLConnection>();
+            idle_connections = new TreeMap<AsyncSQLClient/*client*/,LinkedList<SQLConnection>>();
+            busy_connections = new TreeMap<AsyncSQLClient/*client*/,LinkedList<SQLConnection>>();
+            for(Entry<String,JsonObject> item : hash_and_config.entrySet()) {
+                String hash = item.getKey();
+                JsonObject value = item.getValue();
+                String host = value.getString("host");
+                Integer port = value.getInteger("port");
+                int connection_num = DEFAULT_POOL_SIZE;
+                JsonObject mySQLClientConfig = new JsonObject().put("host", host).put("port",port).
+                                                            put("username","memetao").put("password","123456").
+                                                            put("maxPoolSize",connection_num).
+                                                            put("database","mcg").
+                                                            put("queryTimeout",1000);   /*查询操作，一秒超时*/
+                /*异步执行的情况下，一个mysql业务线程是不是就够了呢*/
+                AsyncSQLClient client = MySQLClient.createShared(vertx, mySQLClientConfig);
+                idle_connections.put(client, new LinkedList<SQLConnection>());
+                busy_connections.put(client, new LinkedList<SQLConnection>());
+                clients.put(hash, client);
+                for(int i = 0 ;i < connection_num; i++) {
+                    client.getConnection(res -> {
+                        if (res.succeeded()) {
+                            SQLConnection conn = res.result();
+                            idle_connections.get(client).add(conn);
+                            hashs.put(conn,hash);
+                        }
+                        else {
+                            log.warn("get mysql connection fail,hash:" + hash);
+                        }
+                      });
                 }
-                else {
-                    connection_pool_size--;
-                    log.error("get mysql connection fail!");
+                if(idle_connections.get(client).size() == 0) {
+                    log.error("get mysql connection fialed,config:" + mySQLClientConfig.toString());
+                    System.exit(-1);
                 }
-              });
+            }
         }
-        
         tasks = new TreeMap<Long,TaskOp>();
         tasks_transaction = new TreeMap<Long,TaskTransaction>();
         
@@ -126,7 +134,7 @@ public class MySqlVerticle extends AbstractVerticle {
             if(mess.indentification != -1) {
                 log.debug("mysql verticle recived ExecuteMessage,identification:" + mess.indentification);
             }
-            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,EXEC));
+            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,EXEC,mess.hash()));
             schedule();
         });
         
@@ -135,7 +143,7 @@ public class MySqlVerticle extends AbstractVerticle {
             if(mess.indentification != -1) {
                 log.debug("mysql verticle recived UpdateMessage,identification:" + mess.indentification);
             }
-            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,UPDATE));
+            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,UPDATE,mess.hash()));
             schedule();
         });
         
@@ -144,7 +152,7 @@ public class MySqlVerticle extends AbstractVerticle {
             if(mess.indentification != -1) {
                 log.debug("mysql verticle recived QueryMessage,identification:" + mess.indentification);
             }
-            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,QUERY));
+            tasks.put( accounter_tasks ++, new TaskOp(mess.operation(),message,QUERY,mess.hash()));
             schedule();
         });
         
@@ -153,6 +161,76 @@ public class MySqlVerticle extends AbstractVerticle {
             tasks_transaction.put(accounter_transaction,new TaskTransaction(mess.operations(),message));
             schedule();
         });
+    }
+    
+    private void reSchedule(SQLConnection conn) {
+        String hash = hashs.get(conn);
+        if(hash == null) {
+            log.error("find hash for connection failed");
+            return ;
+        }
+        AsyncSQLClient client = clients.get(hash);
+        if(client == null) {
+            log.error("find client failed,hash:" + hash);
+            return ;
+        }
+        idle_connections.get(client).add(conn);
+        busy_connections.get(client).remove(conn);
+        schedule();
+    }
+    
+    private void schedule() {
+        /*
+         * 1.有某库的空闲连接，有某库的sql请求
+         * 2.有某库的空闲连接，没有某库的sql请求
+         * 3.没有某库的空闲连接....
+         * 
+         * 所以是以是否有sql请求为导向
+         */
+        for(Entry<Long,TaskOp> task : tasks.entrySet()) {
+            String hash = task.getValue().hash;
+            AsyncSQLClient client = clients.get(hash);
+            if(client == null) {
+                log.error("no such mysql client exist,hash:" + hash);
+                continue;
+            }
+            LinkedList<SQLConnection> conns = idle_connections.get(client);
+            if(conns.size() == 0) {
+                log.info("wait for idle connections,hash:" + hash);
+                continue;
+            }
+            SQLConnection conn = conns.get(0);
+            idle_connections.get(client).remove(conn);
+            busy_connections.get(client).add(conn);
+            tasks.remove(task.getKey()); //为了防止某操作一直未执行成功，又被其它连接执行，需要立马删除
+            final String op = task.getValue().op;
+            switch(op) {
+                case EXEC:
+                    execute(conn,task.getValue().task,task.getValue().mess);
+                    break;
+                case QUERY:
+                    query(conn,task.getValue().task,task.getValue().mess);
+                    break;
+                case UPDATE:
+                    update(conn,task.getValue().task,task.getValue().mess);
+                    break;
+                default:
+                    break;
+            }
+        }
+         //事务操作
+//            if(tasks_transaction.size() > 0) {
+//                Entry<Long,MySqlVerticle.TaskTransaction> next = null;
+//                for(Entry<Long,MySqlVerticle.TaskTransaction> it : tasks_transaction.entrySet()) {
+//                    if(it != null) {
+//                        next = it;
+//                        break;
+//                    }
+//                }
+//                tasks_transaction.remove(next.getKey());
+//                sql_transaction(conn,next.getValue().tasks,next.getValue().mess);
+//            }
+        
     }
     /**
      * @param <T>
@@ -212,116 +290,37 @@ public class MySqlVerticle extends AbstractVerticle {
      * @param message
      */
     /*FIXME:当前的实现只支持update操作*/
-    private <T> void sql_transaction(SQLConnection conn,List<String> ops,Message<T> message) {
-        log.info("mysql transaction:\n" + ops);
-        List<Future<Void>> futures = new ArrayList<Future<Void>>();
-        Future<Void> f_b =  Future.future();
-        /**准备事务*/
-        conn.setAutoCommit(false, f_b.completer());
-        futures.add(f_b);
-        for(String op : ops) {
-            Future<Void> future = Future.future();
-            futures.add(future);
-            /*FIXME: 这里添加上op字段，也可以实现多种类型*/
-            conn.update(op,res->{
-                if(res.succeeded()) {
-                    future.complete();
-                }
-                else {
-                    future.fail(res.cause().toString());
-                }
-            });
-        }
-        Future<Void> f_e =  Future.future();
-        futures.add(f_b);
-        /**提交事务*/
-        conn.commit(f_e.completer());
-        /**立即恢复auto-commit属性*/
-        conn.setAutoCommit(true,null);
-        
-        CompositeFuture.all(new ArrayList<>(futures)).setHandler(res->{
-            CompositeMessage result = new CompositeMessage(res);
-            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlComposite().name()));
-            reSchedule(conn);
-        });
-    }
-    
-    /**需要这两个操作的原因：在之前的实现中，"事务"和"普通操作"都有被对方饿死的可能
-     * 比如说，来了一个事务，但是此时所有连接都被"普通sql操作"沾满，后续又不断的插入新的"普通sql操作"，
-     * 那么事务就永远得不到执行。
-     * 
-     * 调度的策略:
-     *    先到先执行
-     * @param conn
-     */
-    private void reSchedule(SQLConnection conn) {
-        connections_idle.add(conn);
-        connections_busy.remove(conn);
-        schedule();
-    }
-    private void schedule() {
-        
-        SQLConnection conn = null;
-        log.debug("mysqlverticle schedule...." + 
-                    ",current tasks queue size:" + tasks.size() + 
-                    ",idle conn:" + connections_idle.size() + 
-                    ",busy conns:" + connections_busy.size());
-        if(connections_idle.size() > 0 && (tasks_transaction.size() > 0 || tasks.size() > 0 )) {
-            //FIXME: 获取空闲连接(取最近刚活动过的)
-            conn = connections_idle.get(connections_idle.size()-1);
-            connections_busy.add(conn);
-            connections_idle.remove(conn);
-        }
-        else {
-            return;
-        }
-        long latest_access_tasks = Long.MAX_VALUE;
-        long latest_access_transaction = Long.MAX_VALUE;
-        if( tasks.size() > 0) {
-            latest_access_tasks = tasks.firstKey();
-        }
-        if( tasks_transaction.size() > 0) {
-            latest_access_transaction = tasks_transaction.firstKey();
-        }
-        if(latest_access_tasks < latest_access_transaction) {
-            if(tasks.size() > 0) {
-                /*取出一个，接着调用execute_sql*/
-                Entry<Long,MySqlVerticle.TaskOp> next = null;
-                for(Entry<Long,MySqlVerticle.TaskOp> it : tasks.entrySet()) {
-                    if(it != null) {
-                        next = it;
-                        break;
-                    }
-                }
-                tasks.remove(next.getKey()); //为了防止某操作一直未执行成功，又被其它连接执行，造成重复执行的bug
-                final String op = next.getValue().op;
-                switch(op) {
-                    case EXEC:
-                        execute(conn,next.getValue().task,next.getValue().mess);
-                        break;
-                    case QUERY:
-                        query(conn,next.getValue().task,next.getValue().mess);
-                        break;
-                    case UPDATE:
-                        update(conn,next.getValue().task,next.getValue().mess);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-        else {
-            if(tasks_transaction.size() > 0) {
-                Entry<Long,MySqlVerticle.TaskTransaction> next = null;
-                for(Entry<Long,MySqlVerticle.TaskTransaction> it : tasks_transaction.entrySet()) {
-                    if(it != null) {
-                        next = it;
-                        break;
-                    }
-                }
-                tasks_transaction.remove(next.getKey());
-                sql_transaction(conn,next.getValue().tasks,next.getValue().mess);
-            }
-        }
-    }
+//    private <T> void sql_transaction(SQLConnection conn,List<String> ops,Message<T> message) {
+//        log.info("mysql transaction:\n" + ops);
+//        List<Future<Void>> futures = new ArrayList<Future<Void>>();
+//        Future<Void> f_b =  Future.future();
+//        /**准备事务*/
+//        conn.setAutoCommit(false, f_b.completer());
+//        futures.add(f_b);
+//        for(String op : ops) {
+//            Future<Void> future = Future.future();
+//            futures.add(future);
+//            /*FIXME: 这里添加上op字段，也可以实现多种类型*/
+//            conn.update(op,res->{
+//                if(res.succeeded()) {
+//                    future.complete();
+//                }
+//                else {
+//                    future.fail(res.cause().toString());
+//                }
+//            });
+//        }
+//        Future<Void> f_e =  Future.future();
+//        futures.add(f_b);
+//        /**提交事务*/
+//        conn.commit(f_e.completer());
+//        /**立即恢复auto-commit属性*/
+//        conn.setAutoCommit(true,null);
+//        
+//        CompositeFuture.all(new ArrayList<>(futures)).setHandler(res->{
+//            CompositeMessage result = new CompositeMessage(res);
+//            message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlComposite().name()));
+//            reSchedule(conn);
+//        });
+//    }
 }

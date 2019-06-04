@@ -4,32 +4,40 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-import cn.pgyyd.mcg.constant.McgConst;
-import lombok.extern.slf4j.Slf4j;
+import java.util.TreeMap;
 
-@Slf4j
+import cn.pgyyd.mcg.constant.McgConst;
+
 public class StudentSchedule {
+    private static final int WEEKS_PER_SEMESTER = McgConst.WEEKS_PER_SEMESTER;
+    
     private static final int LESSONS_PER_Day = McgConst.LESSONS_PER_Day;
     
     private static final int DAYS_PER_WEEK = McgConst.DAYS_PER_WEEK;
     
-    private static final int INVALID_COURSE_ID = McgConst.INVALID_COURSE_ID;
+    private static final String INVALID_COURSE_ID = McgConst.INVALID_COURSE_ID;
     
-    private int [][] courses = new int[DAYS_PER_WEEK][LESSONS_PER_Day];
+    //private int [][] courses = new int[DAYS_PER_WEEK][LESSONS_PER_Day];
     
-    private int student_id;
+    private String student_id;
     
-    public StudentSchedule(final int id) {
+    private TreeMap<Integer,String [][]> schedules = new TreeMap<Integer,String [][]>();
+    
+    public StudentSchedule(final String id) {
         student_id = id;
-        for(int [] a : courses) {
-            for(int i = 0 ;i < a.length;i++) {
-                a[i] = INVALID_COURSE_ID;
+        for(int week = 0 ; week < WEEKS_PER_SEMESTER ; week++) {
+            String [][] courses = new String[DAYS_PER_WEEK][LESSONS_PER_Day];
+            for(String [] a : courses) {
+                for(int i = 0 ;i < a.length;i++) {
+                    a[i] = INVALID_COURSE_ID;
+                }
             }
+            schedules.put(week, courses);
         }
         //log.info(dump());
     }
     
-    public int stduentId() {
+    public String stduentId() {
         return student_id;
     }
     /**
@@ -37,20 +45,25 @@ public class StudentSchedule {
      * @param course
      */
     public void add_course(CourseSchedule course) {
-        //log.info("student" +student_id +"schedule add lesson...");
-        for(Entry<Integer,ArrayList<Integer>> lesson : course.lessons().entrySet()) {
-            add_lesson(course.courseId(),lesson.getKey(),lesson.getValue());
+        for(int week = 0 ; week < WEEKS_PER_SEMESTER ; week ++) {
+            for(Entry<Integer,ArrayList<Integer>> lesson : course.lessons(week).entrySet()) {
+                add_lesson(course.courseId(),week, lesson.getKey(),lesson.getValue());
+            }
         }
         //log.info("course schedule update.\n" + dump());
     }
     
-    public void add_lesson(final int course_id,final int day,ArrayList<Integer> lessons) {
+    public void add_lesson(final String course_id,final int week, final int day,ArrayList<Integer> lessons) {
         for(int lesson : lessons) {
-            add_lesson(course_id,day,lesson);
+            add_lesson(course_id,week, day,lesson);
         }
     }
     
-    public void add_lesson(int course_id, final int day, int lesson) {
+    public void add_lesson(String course_id, final int week, final int day, int lesson) {
+        if(!schedules.containsKey(week)) {
+            return;
+        }
+        String [][] courses = schedules.get(week);
         if(day <= DAYS_PER_WEEK && day > 0 &&
                 lesson <= LESSONS_PER_Day && lesson > 0 &&
                 course_id != INVALID_COURSE_ID) {
@@ -58,7 +71,11 @@ public class StudentSchedule {
         }
     }
     
-    public boolean exsit(final int day,int lesson) {
+    public boolean exsit(final int week, final int day,int lesson) {
+        if(!schedules.containsKey(week)) {
+            return false;
+        }
+        String [][] courses = schedules.get(week);
         boolean ret = false;
         if(day <= DAYS_PER_WEEK && day > 0 &&
                 lesson <= LESSONS_PER_Day && lesson > 0) {
@@ -67,10 +84,10 @@ public class StudentSchedule {
         return ret;
     }
     
-    public boolean exsit(final int day,List<Integer> lessons) {
+    public boolean exsit(final int week, final int day,List<Integer> lessons) {
         boolean ret = false;
         for(int lesson : lessons) {
-            if(exsit(day,lesson)) {
+            if(exsit(week, day, lesson)) {
                 ret = true;
                 break;
             }
@@ -84,8 +101,9 @@ public class StudentSchedule {
     
     public boolean confict(CourseSchedule course) {
         boolean ret = false;
-        for(Entry<Integer, ArrayList<Integer>> entry : course.lessons().entrySet()) {
-            if(exsit(entry.getKey(),entry.getValue())) {
+        for(int week = 0 ; week < WEEKS_PER_SEMESTER ; week ++)
+        for(Entry<Integer, ArrayList<Integer>> entry : course.lessons(week).entrySet()) {
+            if(exsit(week, entry.getKey(), entry.getValue())) {
                 ret = true;
                 break;
             }
@@ -95,14 +113,17 @@ public class StudentSchedule {
     public String dump() {
         String str = new String();
         str += "student(" + student_id +") private course schedule:\n";
-        for(int day = 1 ; day <= DAYS_PER_WEEK ; day++) {
-            str += "day(" + day + ") :";
-            for(int lesson = 1 ; lesson <= LESSONS_PER_Day ; lesson ++) {
-                if(exsit(day,lesson)) {
-                    str += lesson + " ";
+        for(int week = 0 ;week < WEEKS_PER_SEMESTER ; week ++) {
+            str += "week " + week + 1 + ": \n";
+            for(int day = 1 ; day <= DAYS_PER_WEEK ; day++) {
+                str += "day(" + day + ") :";
+                for(int lesson = 1 ; lesson <= LESSONS_PER_Day ; lesson ++) {
+                    if(exsit(week,day,lesson)) {
+                        str += lesson + " ";
+                    }
                 }
+                str += "\n";
             }
-            str += "\n";
         }
         return str;
     }

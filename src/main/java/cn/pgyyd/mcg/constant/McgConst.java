@@ -31,6 +31,7 @@ public class McgConst {
     //e.g. www.xxxx.com/login?uid=1400304000&token=f9b447f02d59
     public static String LOGIN_QUERY_PATH = "/login";
     
+    public static final int WEEKS_PER_SEMESTER = 12;
     //一天有几节课
     public static final int LESSONS_PER_Day = 12;
     
@@ -38,5 +39,5 @@ public class McgConst {
     public static final int DAYS_PER_WEEK   = 7;
     
     //非法课程id
-    public static final int INVALID_COURSE_ID   = -1;
+    public static final String INVALID_COURSE_ID   = "";
 }
