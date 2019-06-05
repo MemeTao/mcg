@@ -1,0 +1,33 @@
+[2019-06-05 19:00:11,480][main:0]-[INFO]-System starting...
+[2019-06-05 19:00:11,557][main:77]-[DEBUG]-Using SLF4J as the default logging framework
+[2019-06-05 19:00:11,557][main:77]-[DEBUG]--D{}: {}
+[2019-06-05 19:00:11,557][main:77]-[DEBUG]--D{}: {}
+[2019-06-05 19:00:11,572][main:92]-[DEBUG]--Dio.netty.eventLoopThreads: {}
+[2019-06-05 19:00:11,588][main:108]-[DEBUG]--Dio.netty.noKeySetOptimization: {}
+[2019-06-05 19:00:11,588][main:108]-[DEBUG]--Dio.netty.selectorAutoRebuildThreshold: {}
+[2019-06-05 19:00:11,600][main:120]-[DEBUG]--Dio.netty.noUnsafe: {}
+[2019-06-05 19:00:11,600][main:120]-[DEBUG]-Java version: {}
+[2019-06-05 19:00:11,601][main:121]-[DEBUG]-sun.misc.Unsafe.theUnsafe: available
+[2019-06-05 19:00:11,601][main:121]-[DEBUG]-sun.misc.Unsafe.copyMemory: available
+[2019-06-05 19:00:11,601][main:121]-[DEBUG]-java.nio.Buffer.address: available
+[2019-06-05 19:00:11,602][main:122]-[DEBUG]-direct buffer constructor: available
+[2019-06-05 19:00:11,602][main:122]-[DEBUG]-java.nio.Bits.unaligned: available, {}
+[2019-06-05 19:00:11,602][main:122]-[DEBUG]-jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable prior to Java9
+[2019-06-05 19:00:11,602][main:122]-[DEBUG]-java.nio.DirectByteBuffer.<init>(long, int): {}
+[2019-06-05 19:00:11,602][main:122]-[DEBUG]-sun.misc.Unsafe: {}
+[2019-06-05 19:00:11,603][main:123]-[DEBUG]--Dio.netty.tmpdir: {} (java.io.tmpdir)
+[2019-06-05 19:00:11,603][main:123]-[DEBUG]--Dio.netty.bitMode: {} (sun.arch.data.model)
+[2019-06-05 19:00:11,604][main:124]-[DEBUG]--Dio.netty.maxDirectMemory: {} bytes
+[2019-06-05 19:00:11,604][main:124]-[DEBUG]--Dio.netty.uninitializedArrayAllocationThreshold: {}
+[2019-06-05 19:00:11,604][main:124]-[DEBUG]-java.nio.ByteBuffer.cleaner(): available
+[2019-06-05 19:00:11,604][main:124]-[DEBUG]--Dio.netty.noPreferDirect: {}
+[2019-06-05 19:00:11,609][main:129]-[DEBUG]-org.jctools-core.MpscChunkedArrayQueue: available
+[2019-06-05 19:00:11,633][main:153]-[DEBUG]-Default DNS servers: {} (sun.net.dns.ResolverConfiguration)
+[2019-06-05 19:00:11,636][main:156]-[DEBUG]--Djava.net.preferIPv4Stack: {}
+[2019-06-05 19:00:11,636][main:156]-[DEBUG]--Djava.net.preferIPv6Addresses: {}
+[2019-06-05 19:00:11,637][main:157]-[DEBUG]-Loopback interface: {} ({}, {})
+[2019-06-05 19:00:11,637][main:157]-[DEBUG]-{}: {}
+[2019-06-05 19:00:11,721][vert.x-internal-blocking-0:241]-[DEBUG]--D{}: {}
+[2019-06-05 19:00:11,721][vert.x-internal-blocking-0:241]-[DEBUG]--D{}: {}
+[2019-06-05 19:00:11,722][vert.x-internal-blocking-0:242]-[DEBUG]-Loaded default ResourceLeakDetector: {}
+[2019-06-05 19:00:11,868][vert.x-eventloop-thread-1:388]-[ERROR]-get configuration file failed

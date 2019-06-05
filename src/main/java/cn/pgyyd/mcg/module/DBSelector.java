@@ -3,6 +3,8 @@ package cn.pgyyd.mcg.module;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -18,8 +20,6 @@ public class DBSelector {
     
     private static TreeMap<String/*hash key*/,JsonObject/*数据库信息，账号\密码等*/> db_configs;
     
-    private Condition wait_for_initialized;
-    
     private long hash_ring_length = 0;
     
     private TreeMap<Long,String> indexs;
@@ -27,7 +27,10 @@ public class DBSelector {
     public DBSelector() {
         ;
     }
-    
+    /**
+     * FIXME: 存在多线程竞争的问题
+     * @param vertx
+     */
     public void init(Vertx vertx) {
         if(is_initialized) {
             return;
@@ -44,18 +47,21 @@ public class DBSelector {
                 bind_hash_and_mysql(ret.result());
                 exactMainDbInfo(get_mysql_json_config(ret.result(),"m0"));
                 
-                wait_for_initialized.notify();
+                is_initialized = true;
             } else {
+                log.error("get config file failed");
                 System.exit(-1);
             }
         });
-        try {
-            wait_for_initialized.await();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            System.exit(-1);
+        do {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
+        while(!is_initialized);
         log.info("DBSelector initialized");
     }
 
