@@ -1,4 +1,9 @@
 {
     "port": 8080,
-    "threads": 4
+    "threads": 4,
+    "db_number":1,
+    "m0":{
+    },
+    "s1":{
+    }
 }

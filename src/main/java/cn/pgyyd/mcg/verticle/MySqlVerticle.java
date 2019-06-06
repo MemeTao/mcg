@@ -51,8 +51,6 @@ public class MySqlVerticle extends AbstractVerticle {
         String hash;
     }
     
-    private static int DEFAULT_POOL_SIZE = 16;
-    
     final public static String EXEC = "mysql-exec";
     
     final public static String QUERY = "mysql-query";
@@ -64,13 +62,10 @@ public class MySqlVerticle extends AbstractVerticle {
     
     private TreeMap<String/*hash*/,AsyncSQLClient> clients;
     
-    //private TreeMap<AsyncSQLClient/*client*/,SQLConnection> connections;
+    private TreeMap<String/*hash*/,LinkedList<SQLConnection>> idle_connections;
     
-    private TreeMap<AsyncSQLClient/*client*/,LinkedList<SQLConnection>> idle_connections;
-    
-    private TreeMap<AsyncSQLClient/*client*/,LinkedList<SQLConnection>> busy_connections;  //仅仅是为了记录、debug
-    
-    private TreeMap<SQLConnection,String> hashs;
+    private TreeMap<String/*hash*/,LinkedList<SQLConnection>> busy_connections;
+   
     /**假设1纳秒自增一次，64位的整数也够执行584年
      * 好吧，297年
      * */
@@ -81,44 +76,32 @@ public class MySqlVerticle extends AbstractVerticle {
     private TreeMap<Long,TaskTransaction> tasks_transaction;
     @Override
     public void start() throws Exception {
+        log.info("mysql verticle start...");
         TreeMap<String,JsonObject> hash_and_config = DBSelector.hashkey_and_db_configs(); //同步执行?
         if(hash_and_config != null) {
             clients = new TreeMap<String/*hash*/,AsyncSQLClient>();
-            //connections = new TreeMap<AsyncSQLClient/*client*/,SQLConnection>();
-            idle_connections = new TreeMap<AsyncSQLClient/*client*/,LinkedList<SQLConnection>>();
-            busy_connections = new TreeMap<AsyncSQLClient/*client*/,LinkedList<SQLConnection>>();
+            idle_connections = new TreeMap<String/*hash*/,LinkedList<SQLConnection>>();
+            busy_connections = new TreeMap<String/*hash*/,LinkedList<SQLConnection>>();
             for(Entry<String,JsonObject> item : hash_and_config.entrySet()) {
                 String hash = item.getKey();
-                JsonObject value = item.getValue();
-                String host = value.getString("host");
-                Integer port = value.getInteger("port");
-                int connection_num = DEFAULT_POOL_SIZE;
-                JsonObject mySQLClientConfig = new JsonObject().put("host", host).put("port",port).
-                                                            put("username","memetao").put("password","123456").
-                                                            put("maxPoolSize",connection_num).
-                                                            put("database","mcg").
-                                                            put("queryTimeout",1000);   /*查询操作，一秒超时*/
-                /*异步执行的情况下，一个mysql业务线程是不是就够了呢*/
-                AsyncSQLClient client = MySQLClient.createShared(vertx, mySQLClientConfig);
-                idle_connections.put(client, new LinkedList<SQLConnection>());
-                busy_connections.put(client, new LinkedList<SQLConnection>());
+                int connection_num = item.getValue().getInteger("maxPoolSize");
+                AsyncSQLClient client = MySQLClient.createShared(vertx, item.getValue());
+                idle_connections.put(hash, new LinkedList<SQLConnection>());
+                busy_connections.put(hash, new LinkedList<SQLConnection>());
+                
                 clients.put(hash, client);
                 for(int i = 0 ;i < connection_num; i++) {
                     client.getConnection(res -> {
                         if (res.succeeded()) {
                             SQLConnection conn = res.result();
-                            idle_connections.get(client).add(conn);
-                            hashs.put(conn,hash);
+                            idle_connections.get(hash).add(conn);
                         }
                         else {
                             log.warn("get mysql connection fail,hash:" + hash);
                         }
                       });
                 }
-                if(idle_connections.get(client).size() == 0) {
-                    log.error("get mysql connection fialed,config:" + mySQLClientConfig.toString());
-                    System.exit(-1);
-                }
+                log.info("initialize mysql connections use mysql configurate:" + item.getValue().toString());
             }
         }
         tasks = new TreeMap<Long,TaskOp>();
@@ -163,19 +146,15 @@ public class MySqlVerticle extends AbstractVerticle {
         });
     }
     
-    private void reSchedule(SQLConnection conn) {
-        String hash = hashs.get(conn);
-        if(hash == null) {
-            log.error("find hash for connection failed");
-            return ;
-        }
+    private void reSchedule(String hash,SQLConnection conn) {
+
         AsyncSQLClient client = clients.get(hash);
         if(client == null) {
             log.error("find client failed,hash:" + hash);
             return ;
         }
-        idle_connections.get(client).add(conn);
-        busy_connections.get(client).remove(conn);
+        busy_connections.get(hash).remove(conn);
+        idle_connections.get(hash).addFirst(conn);
         schedule();
     }
     
@@ -189,30 +168,25 @@ public class MySqlVerticle extends AbstractVerticle {
          */
         for(Entry<Long,TaskOp> task : tasks.entrySet()) {
             String hash = task.getValue().hash;
-            AsyncSQLClient client = clients.get(hash);
-            if(client == null) {
-                log.error("no such mysql client exist,hash:" + hash);
-                continue;
-            }
-            LinkedList<SQLConnection> conns = idle_connections.get(client);
-            if(conns.size() == 0) {
+            LinkedList<SQLConnection> conns = idle_connections.get(hash);
+            if(conns == null || conns.size() == 0) {  //对 == null 不处理
                 log.info("wait for idle connections,hash:" + hash);
                 continue;
             }
             SQLConnection conn = conns.get(0);
-            idle_connections.get(client).remove(conn);
-            busy_connections.get(client).add(conn);
+            idle_connections.get(hash).remove(conn);
+            busy_connections.get(hash).add(conn);
             tasks.remove(task.getKey()); //为了防止某操作一直未执行成功，又被其它连接执行，需要立马删除
             final String op = task.getValue().op;
             switch(op) {
                 case EXEC:
-                    execute(conn,task.getValue().task,task.getValue().mess);
+                    execute(hash,conn,task.getValue().task,task.getValue().mess);
                     break;
                 case QUERY:
-                    query(conn,task.getValue().task,task.getValue().mess);
+                    query(hash,conn,task.getValue().task,task.getValue().mess);
                     break;
                 case UPDATE:
-                    update(conn,task.getValue().task,task.getValue().mess);
+                    update(hash,conn,task.getValue().task,task.getValue().mess);
                     break;
                 default:
                     break;
@@ -238,7 +212,7 @@ public class MySqlVerticle extends AbstractVerticle {
      * @param op   待执行操作
      * @param message 
      */
-    private <T> void execute(SQLConnection conn,String op,Message<T> message) {
+    private <T> void execute(String hash,SQLConnection conn,String op,Message<T> message) {
         ExecuteMessage mess = (ExecuteMessage)(message.body());
         if(mess.indentification != -1) {
             log.debug("mysql execute:" + op + ",identification:" + mess.indentification);
@@ -249,11 +223,11 @@ public class MySqlVerticle extends AbstractVerticle {
             }
             ExecuteMessage result = new ExecuteMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name()));
-            reSchedule(conn);
+            reSchedule(hash,conn);
         });
     }
     
-    private <T> void query(SQLConnection conn,String op,Message<T> message) {
+    private <T> void query(String hash,SQLConnection conn,String op,Message<T> message) {
         QueryMessage mess = (QueryMessage)(message.body());
         if(mess.indentification != -1) {
             log.debug("mysql query:" + op + ",identification:" + mess.indentification);
@@ -264,11 +238,11 @@ public class MySqlVerticle extends AbstractVerticle {
             }
             QueryMessage result = new QueryMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name()));
-            reSchedule(conn);
+            reSchedule(hash,conn);
         });
     }
     
-    private <T> void update(SQLConnection conn,String op,Message<T> message) {
+    private <T> void update(String hash,SQLConnection conn,String op,Message<T> message) {
         UpdateMessage mess = (UpdateMessage)(message.body());
         if(mess.indentification != -1) {
             log.debug("mysql update:" + op + ",identification:" + mess.indentification);
@@ -279,7 +253,7 @@ public class MySqlVerticle extends AbstractVerticle {
             }
             UpdateMessage result = new UpdateMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name()));
-            reSchedule(conn);
+            reSchedule(hash,conn);
         });
     }
     

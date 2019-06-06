@@ -18,7 +18,7 @@ public class CourseSchedule {
     
     private String course_id ;
     
-    private TreeMap<Integer,boolean[]> schedules;
+    private TreeMap<Integer,boolean[]> schedules = new TreeMap<Integer,boolean[]>();
     
     public CourseSchedule(String course_id){
         this.course_id = course_id;

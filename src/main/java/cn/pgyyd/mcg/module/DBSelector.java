@@ -2,14 +2,6 @@ package cn.pgyyd.mcg.module;
 
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import io.vertx.config.ConfigRetriever;
-import io.vertx.config.ConfigRetrieverOptions;
-import io.vertx.config.ConfigStoreOptions;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 /*TODO:弄成单例
@@ -18,11 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 public class DBSelector {
     private static  Boolean is_initialized = false;
     
-    private static TreeMap<String/*hash key*/,JsonObject/*数据库信息，账号\密码等*/> db_configs;
+    private static TreeMap<String/*hash key*/,
+            JsonObject/*数据库信息，账号\密码等*/> db_configs = new TreeMap<String,JsonObject>();
     
-    private long hash_ring_length = 0;
+    private static long hash_ring_length = 0;
     
-    private TreeMap<Long,String> indexs;
+    private static TreeMap<Long,String> indexs = new TreeMap<Long,String>();
     
     public DBSelector() {
         ;
@@ -31,37 +24,16 @@ public class DBSelector {
      * FIXME: 存在多线程竞争的问题
      * @param vertx
      */
-    public void init(Vertx vertx) {
+    public void init(JsonObject config) {
         if(is_initialized) {
             return;
         }
         log.info("DBSelector initializing...");
-        ConfigStoreOptions storeOptions = new ConfigStoreOptions().setType("file").setConfig(new JsonObject().put("path", "config.json"));
-        ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions().addStore(storeOptions);
-        ConfigRetriever retriever =  ConfigRetriever.create(vertx, retrieverOptions);
-        retriever.getConfig(ret -> {
-            if(ret.succeeded()) {
-                int db_number = ret.result().getInteger("db_number");  
-                
-                allocate_hashkeys(db_number);
-                bind_hash_and_mysql(ret.result());
-                exactMainDbInfo(get_mysql_json_config(ret.result(),"m0"));
-                
-                is_initialized = true;
-            } else {
-                log.error("get config file failed");
-                System.exit(-1);
-            }
-        });
-        do {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        while(!is_initialized);
+        Integer db_number =config.getInteger("db_number",1);  
+        allocate_hashkeys(db_number);
+        bind_hash_and_mysql(config);
+        exactMainDbInfo(get_mysql_json_config(config,"m0"));
+        is_initialized = true;
         log.info("DBSelector initialized");
     }
 
@@ -81,22 +53,28 @@ public class DBSelector {
     private int get_key_from_student_id(String student_id) {
         //1400304211   003代表学院id?
         //FIXME:应该没有000吧
-        student_id = student_id.substring(student_id.length() - 8);
-        student_id = student_id.substring(0,3);  
+        try {
+            student_id = student_id.substring(2,5);
+        }catch (IndexOutOfBoundsException e) {
+            log.error("student id :"+student_id + " is illegal!");
+        }
         return 0;
     }
     
     public String hash_from_student_id(final String student) {
         int key = get_key_from_student_id(student);
         long index = key % hash_ring_length;
-        return indexs.get(index);
+        String hash =  indexs.get(index);
+        return hash;
     }
     
     public String hash_from_course_code(final String code) {
         //按照计划，每个课程id的后3位是学院id
+        //cjlu-00002-001
         int key  =  Integer.parseInt(code.substring(code.length() - 3, code.length() - 1));
         long index = key % hash_ring_length;
-        return indexs.get(index);
+        String hash = indexs.get(index);
+        return hash;
     }
     
     public String main_db_hash()
@@ -110,6 +88,11 @@ public class DBSelector {
     }
     
     private void allocate_hashkeys(int db_num) {
+        log.info("allocating hash keys...");
+        if(db_num == 0) {
+            log.error("db number is must greater than zero!");
+            System.exit(-1);
+        }
         String hash0 = "mcg-" + "database-selector-seat";
         hash_ring_length = db_num ;
         for(int i = 0 ;i < db_num ; i++) {
@@ -119,11 +102,13 @@ public class DBSelector {
     }
     
     private void bind_hash_and_mysql(JsonObject configs){
+        log.info("bind hash and mysql...");
         for(Entry<Long,String> it : indexs.entrySet()) {
             JsonObject config = null;
             if(it.getKey() == 0) {
                 config = get_mysql_json_config(configs,"m0");
                 if(config == null) {
+                    log.error("load m0 configuration failed!");
                     System.exit(-1);
                 }
                 db_configs.put(it.getValue(), config);
@@ -131,6 +116,7 @@ public class DBSelector {
             }
             config = get_mysql_json_config(configs,"s" + it.getKey());
             if(config == null) {
+                log.error("load s" + it.getKey() +" configuration failed!");
                 System.exit(-1);
             }
             db_configs.put(it.getValue(),config );
@@ -140,16 +126,15 @@ public class DBSelector {
     private JsonObject get_mysql_json_config(JsonObject configs, String name) {
         JsonObject config = configs.getJsonObject(name);  
         if(config == null) {
-            log.error("get mysql configuration failed,name:" + name);
             return config;
         }
         JsonObject mysql = new JsonObject().
-                put("host", config.getString("host")).
-                put("port",config.getInteger("port")).
-                put("username",config.getString("user")).
-                put("password",config.getString("passwd")).
-                put("maxPoolSize",config.getInteger("connections")).
-                put("database",config.getString("name")).
+                put("host", config.getString("host","127.0.0.1")).
+                put("port",config.getInteger("port",3306)).
+                put("username",config.getString("user","memetao")).
+                put("password",config.getString("passwd","123456")).
+                put("maxPoolSize",config.getInteger("connections",4)).
+                put("database",config.getString("name","mcg")).
                 put("queryTimeout",1000);
         return mysql;
     }

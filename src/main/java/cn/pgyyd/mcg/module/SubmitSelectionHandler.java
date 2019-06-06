@@ -8,6 +8,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.PatternSyntaxException;
 
@@ -26,11 +27,15 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
             event.fail(400);
             return;
         }
-        ArrayList<String> courseIdList;
+        ArrayList<String> courseIdList = new ArrayList<String>();
         String userId;
         try {
             userId = uid;
-            courseIdList =  (ArrayList<String>) Arrays.asList(courseids.split(","));
+            //FIXME:我不知道如何直接转为ArrayList
+            List<String> l =  Arrays.asList(courseids.split(","));
+            for(String course : l) {
+                courseIdList.add(course);
+            }
         } catch (PatternSyntaxException e) {
             //TODO: log something
             event.fail(400);

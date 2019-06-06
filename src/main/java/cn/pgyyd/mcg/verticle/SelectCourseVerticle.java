@@ -28,7 +28,7 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
     //private AtomicInteger seq_generator = new AtomicInteger(0);
     
     private static long num_success = 0;
-    private static long num_failed = 0;
+    
     private static AtomicInteger temp_id = new AtomicInteger(0);
     
     private class Task {
@@ -86,7 +86,6 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                }
                log.info("select course operator done!identification:" + task.sequence + 
                        ",success:" + num_success + 
-                       ",failed:"  + num_failed +
                        ",current time:" + System.currentTimeMillis());
                handler.handle(successed_courses);
             });
@@ -108,11 +107,13 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                 student_schdule = v;
                 ArrayList<String> valid_course_ids = new ArrayList<String>();
                 //3.遍历提交的选修课，检查时间是否冲突
+                //FIXME: 测试时不检查冲突
                 for(Entry<String, CourseSchedule> entry : courses_schdule.entrySet()) {
-                    CourseSchedule course_schedule = entry.getValue(); 
-                    if(!student_schdule.confict(course_schedule)) {
-                        valid_course_ids.add(entry.getKey());
-                    }
+//                    CourseSchedule course_schedule = entry.getValue(); 
+//                    if(!student_schdule.confict(course_schedule)) {
+//                        valid_course_ids.add(entry.getKey());
+//                    }
+                    valid_course_ids.add(entry.getKey());
                 }
                 ArrayList<Future<Void>> fs = new ArrayList<Future<Void>>();
                 //遍历不冲突的课程，进行选课
@@ -138,7 +139,6 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                                 f.complete(); 
                             });
                         }else {
-                            num_failed ++;
                             f.fail("updateRemain failed!"); 
                         }
                     });

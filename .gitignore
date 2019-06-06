@@ -141,5 +141,6 @@ hs_err_pid*
 
 # Asciidctor plugin
 .asciidoctor
-.log
-.bk
+*.log
+*.bk
+*.txt

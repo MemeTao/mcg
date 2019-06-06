@@ -1,33 +1,713 @@
-[2019-06-05 19:00:11,480][main:0]-[INFO]-System starting...
-[2019-06-05 19:00:11,557][main:77]-[DEBUG]-Using SLF4J as the default logging framework
-[2019-06-05 19:00:11,557][main:77]-[DEBUG]--D{}: {}
-[2019-06-05 19:00:11,557][main:77]-[DEBUG]--D{}: {}
-[2019-06-05 19:00:11,572][main:92]-[DEBUG]--Dio.netty.eventLoopThreads: {}
-[2019-06-05 19:00:11,588][main:108]-[DEBUG]--Dio.netty.noKeySetOptimization: {}
-[2019-06-05 19:00:11,588][main:108]-[DEBUG]--Dio.netty.selectorAutoRebuildThreshold: {}
-[2019-06-05 19:00:11,600][main:120]-[DEBUG]--Dio.netty.noUnsafe: {}
-[2019-06-05 19:00:11,600][main:120]-[DEBUG]-Java version: {}
-[2019-06-05 19:00:11,601][main:121]-[DEBUG]-sun.misc.Unsafe.theUnsafe: available
-[2019-06-05 19:00:11,601][main:121]-[DEBUG]-sun.misc.Unsafe.copyMemory: available
-[2019-06-05 19:00:11,601][main:121]-[DEBUG]-java.nio.Buffer.address: available
-[2019-06-05 19:00:11,602][main:122]-[DEBUG]-direct buffer constructor: available
-[2019-06-05 19:00:11,602][main:122]-[DEBUG]-java.nio.Bits.unaligned: available, {}
-[2019-06-05 19:00:11,602][main:122]-[DEBUG]-jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable prior to Java9
-[2019-06-05 19:00:11,602][main:122]-[DEBUG]-java.nio.DirectByteBuffer.<init>(long, int): {}
-[2019-06-05 19:00:11,602][main:122]-[DEBUG]-sun.misc.Unsafe: {}
-[2019-06-05 19:00:11,603][main:123]-[DEBUG]--Dio.netty.tmpdir: {} (java.io.tmpdir)
-[2019-06-05 19:00:11,603][main:123]-[DEBUG]--Dio.netty.bitMode: {} (sun.arch.data.model)
-[2019-06-05 19:00:11,604][main:124]-[DEBUG]--Dio.netty.maxDirectMemory: {} bytes
-[2019-06-05 19:00:11,604][main:124]-[DEBUG]--Dio.netty.uninitializedArrayAllocationThreshold: {}
-[2019-06-05 19:00:11,604][main:124]-[DEBUG]-java.nio.ByteBuffer.cleaner(): available
-[2019-06-05 19:00:11,604][main:124]-[DEBUG]--Dio.netty.noPreferDirect: {}
-[2019-06-05 19:00:11,609][main:129]-[DEBUG]-org.jctools-core.MpscChunkedArrayQueue: available
-[2019-06-05 19:00:11,633][main:153]-[DEBUG]-Default DNS servers: {} (sun.net.dns.ResolverConfiguration)
-[2019-06-05 19:00:11,636][main:156]-[DEBUG]--Djava.net.preferIPv4Stack: {}
-[2019-06-05 19:00:11,636][main:156]-[DEBUG]--Djava.net.preferIPv6Addresses: {}
-[2019-06-05 19:00:11,637][main:157]-[DEBUG]-Loopback interface: {} ({}, {})
-[2019-06-05 19:00:11,637][main:157]-[DEBUG]-{}: {}
-[2019-06-05 19:00:11,721][vert.x-internal-blocking-0:241]-[DEBUG]--D{}: {}
-[2019-06-05 19:00:11,721][vert.x-internal-blocking-0:241]-[DEBUG]--D{}: {}
-[2019-06-05 19:00:11,722][vert.x-internal-blocking-0:242]-[DEBUG]-Loaded default ResourceLeakDetector: {}
-[2019-06-05 19:00:11,868][vert.x-eventloop-thread-1:388]-[ERROR]-get configuration file failed
+[2019-06-06 15:38:26,937][main:0]-[INFO]-System starting...
+[2019-06-06 15:38:27,023][main:86]-[DEBUG]-Using SLF4J as the default logging framework
+[2019-06-06 15:38:27,024][main:87]-[DEBUG]--D{}: {}
+[2019-06-06 15:38:27,024][main:87]-[DEBUG]--D{}: {}
+[2019-06-06 15:38:27,039][main:102]-[DEBUG]--Dio.netty.eventLoopThreads: {}
+[2019-06-06 15:38:27,055][main:118]-[DEBUG]--Dio.netty.noKeySetOptimization: {}
+[2019-06-06 15:38:27,055][main:118]-[DEBUG]--Dio.netty.selectorAutoRebuildThreshold: {}
+[2019-06-06 15:38:27,067][main:130]-[DEBUG]--Dio.netty.noUnsafe: {}
+[2019-06-06 15:38:27,067][main:130]-[DEBUG]-Java version: {}
+[2019-06-06 15:38:27,068][main:131]-[DEBUG]-sun.misc.Unsafe.theUnsafe: available
+[2019-06-06 15:38:27,069][main:132]-[DEBUG]-sun.misc.Unsafe.copyMemory: available
+[2019-06-06 15:38:27,069][main:132]-[DEBUG]-java.nio.Buffer.address: available
+[2019-06-06 15:38:27,069][main:132]-[DEBUG]-direct buffer constructor: available
+[2019-06-06 15:38:27,070][main:133]-[DEBUG]-java.nio.Bits.unaligned: available, {}
+[2019-06-06 15:38:27,070][main:133]-[DEBUG]-jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable prior to Java9
+[2019-06-06 15:38:27,070][main:133]-[DEBUG]-java.nio.DirectByteBuffer.<init>(long, int): {}
+[2019-06-06 15:38:27,070][main:133]-[DEBUG]-sun.misc.Unsafe: {}
+[2019-06-06 15:38:27,070][main:133]-[DEBUG]--Dio.netty.tmpdir: {} (java.io.tmpdir)
+[2019-06-06 15:38:27,070][main:133]-[DEBUG]--Dio.netty.bitMode: {} (sun.arch.data.model)
+[2019-06-06 15:38:27,071][main:134]-[DEBUG]--Dio.netty.maxDirectMemory: {} bytes
+[2019-06-06 15:38:27,071][main:134]-[DEBUG]--Dio.netty.uninitializedArrayAllocationThreshold: {}
+[2019-06-06 15:38:27,072][main:135]-[DEBUG]-java.nio.ByteBuffer.cleaner(): available
+[2019-06-06 15:38:27,072][main:135]-[DEBUG]--Dio.netty.noPreferDirect: {}
+[2019-06-06 15:38:27,078][main:141]-[DEBUG]-org.jctools-core.MpscChunkedArrayQueue: available
+[2019-06-06 15:38:27,102][main:165]-[DEBUG]-Default DNS servers: {} (sun.net.dns.ResolverConfiguration)
+[2019-06-06 15:38:27,105][main:168]-[DEBUG]--Djava.net.preferIPv4Stack: {}
+[2019-06-06 15:38:27,105][main:168]-[DEBUG]--Djava.net.preferIPv6Addresses: {}
+[2019-06-06 15:38:27,106][main:169]-[DEBUG]-Loopback interface: {} ({}, {})
+[2019-06-06 15:38:27,107][main:170]-[DEBUG]-{}: {}
+[2019-06-06 15:38:27,188][vert.x-internal-blocking-0:251]-[DEBUG]--D{}: {}
+[2019-06-06 15:38:27,188][vert.x-internal-blocking-0:251]-[DEBUG]--D{}: {}
+[2019-06-06 15:38:27,189][vert.x-internal-blocking-0:252]-[DEBUG]-Loaded default ResourceLeakDetector: {}
+[2019-06-06 15:38:27,344][vert.x-eventloop-thread-1:407]-[INFO]-DBSelector initializing...
+[2019-06-06 15:38:27,344][vert.x-eventloop-thread-1:407]-[INFO]-allocating hash keys...
+[2019-06-06 15:38:27,344][vert.x-eventloop-thread-1:407]-[INFO]-bind hash and mysql...
+[2019-06-06 15:38:27,345][vert.x-eventloop-thread-1:408]-[INFO]-DBSelector initialized
+[2019-06-06 15:38:27,362][vert.x-eventloop-thread-7:425]-[INFO]-mysql verticle start...
+[2019-06-06 15:38:27,560][vert.x-eventloop-thread-4:623]-[DEBUG]--Dio.netty.allocator.numHeapArenas: {}
+[2019-06-06 15:38:27,560][vert.x-eventloop-thread-4:623]-[DEBUG]--Dio.netty.allocator.numDirectArenas: {}
+[2019-06-06 15:38:27,560][vert.x-eventloop-thread-4:623]-[DEBUG]--Dio.netty.allocator.pageSize: {}
+[2019-06-06 15:38:27,560][vert.x-eventloop-thread-4:623]-[DEBUG]--Dio.netty.allocator.maxOrder: {}
+[2019-06-06 15:38:27,560][vert.x-eventloop-thread-4:623]-[DEBUG]--Dio.netty.allocator.chunkSize: {}
+[2019-06-06 15:38:27,560][vert.x-eventloop-thread-4:623]-[DEBUG]--Dio.netty.allocator.tinyCacheSize: {}
+[2019-06-06 15:38:27,560][vert.x-eventloop-thread-4:623]-[DEBUG]--Dio.netty.allocator.smallCacheSize: {}
+[2019-06-06 15:38:27,561][vert.x-eventloop-thread-4:624]-[DEBUG]--Dio.netty.allocator.normalCacheSize: {}
+[2019-06-06 15:38:27,561][vert.x-eventloop-thread-4:624]-[DEBUG]--Dio.netty.allocator.maxCachedBufferCapacity: {}
+[2019-06-06 15:38:27,561][vert.x-eventloop-thread-4:624]-[DEBUG]--Dio.netty.allocator.cacheTrimInterval: {}
+[2019-06-06 15:38:27,561][vert.x-eventloop-thread-4:624]-[DEBUG]--Dio.netty.allocator.useCacheForAllThreads: {}
+[2019-06-06 15:38:27,562][vert.x-eventloop-thread-4:625]-[DEBUG]--Dio.netty.threadLocalMap.stringBuilder.initialSize: {}
+[2019-06-06 15:38:27,562][vert.x-eventloop-thread-4:625]-[DEBUG]--Dio.netty.threadLocalMap.stringBuilder.maxSize: {}
+[2019-06-06 15:38:27,616][vert.x-eventloop-thread-4:679]-[DEBUG]--Dio.netty.processId: {} (auto-detected)
+[2019-06-06 15:38:27,620][vert.x-eventloop-thread-4:683]-[DEBUG]--Dio.netty.machineId: {} (auto-detected)
+[2019-06-06 15:38:27,639][vert.x-eventloop-thread-4:702]-[DEBUG]--Dio.netty.allocator.type: {}
+[2019-06-06 15:38:27,639][vert.x-eventloop-thread-4:702]-[DEBUG]--Dio.netty.threadLocalDirectBufferSize: {}
+[2019-06-06 15:38:27,639][vert.x-eventloop-thread-4:702]-[DEBUG]--Dio.netty.maxThreadLocalCharBufferSize: {}
+[2019-06-06 15:38:27,902][vert.x-eventloop-thread-0:965]-[DEBUG]-Channel became active
+[2019-06-06 15:38:27,903][vert.x-eventloop-thread-0:966]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:38:27,906][vert.x-eventloop-thread-1:969]-[DEBUG]-Channel became active
+[2019-06-06 15:38:27,906][vert.x-eventloop-thread-2:969]-[DEBUG]-Channel became active
+[2019-06-06 15:38:27,906][vert.x-eventloop-thread-1:969]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:38:27,906][vert.x-eventloop-thread-2:969]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:38:27,906][vert.x-eventloop-thread-3:969]-[DEBUG]-Channel became active
+[2019-06-06 15:38:27,906][vert.x-eventloop-thread-3:969]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:38:27,914][vert.x-eventloop-thread-3:977]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:38:27,916][vert.x-eventloop-thread-2:979]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:38:27,916][vert.x-eventloop-thread-1:979]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:38:27,916][vert.x-eventloop-thread-0:979]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:38:27,923][vert.x-eventloop-thread-1:986]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,225,[B@716d2dad,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:38:27,923][vert.x-eventloop-thread-2:986]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,226,[B@cf8a958,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:38:27,925][vert.x-eventloop-thread-0:988]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,224,[B@495220b0,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:38:27,923][vert.x-eventloop-thread-3:986]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,227,[B@25250e12,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:38:27,927][vert.x-eventloop-thread-7:990]-[INFO]-initialize mysql connections use mysql configurate:{"host":"127.0.0.1","port":3306,"username":"memetao","password":"123456","maxPoolSize":4,"database":"mcg","queryTimeout":1000}
+[2019-06-06 15:38:27,944][vert.x-eventloop-thread-1:1007]-[DEBUG]--Dio.netty.recycler.maxCapacityPerThread: {}
+[2019-06-06 15:38:27,944][vert.x-eventloop-thread-1:1007]-[DEBUG]--Dio.netty.recycler.maxSharedCapacityFactor: {}
+[2019-06-06 15:38:27,944][vert.x-eventloop-thread-1:1007]-[DEBUG]--Dio.netty.recycler.linkCapacity: {}
+[2019-06-06 15:38:27,945][vert.x-eventloop-thread-1:1008]-[DEBUG]--Dio.netty.recycler.ratio: {}
+[2019-06-06 15:38:27,947][vert.x-eventloop-thread-0:1010]-[DEBUG]-Connected to database
+[2019-06-06 15:38:27,947][vert.x-eventloop-thread-3:1010]-[DEBUG]-Connected to database
+[2019-06-06 15:38:27,947][vert.x-eventloop-thread-2:1010]-[DEBUG]-Connected to database
+[2019-06-06 15:38:27,947][vert.x-eventloop-thread-1:1010]-[DEBUG]-Connected to database
+[2019-06-06 15:38:30,235][vert.x-eventloop-thread-5:3298]-[DEBUG]--Dio.netty.noJdkZlibDecoder: {}
+[2019-06-06 15:38:30,235][vert.x-eventloop-thread-5:3298]-[DEBUG]--Dio.netty.noJdkZlibEncoder: {}
+[2019-06-06 15:38:30,310][vert.x-eventloop-thread-5:3373]-[INFO]-recived select course request,uid:1400101320,courseids:[cjlu-00003-001],identification:1
+[2019-06-06 15:38:30,316][vert.x-eventloop-thread-2:3379]-[INFO]-current task queue size:1,schedule...identification:1
+[2019-06-06 15:38:30,317][vert.x-eventloop-thread-2:3380]-[INFO]-SelectCourse Task running,identification:1
+[2019-06-06 15:38:30,318][vert.x-eventloop-thread-2:3381]-[DEBUG]-try getCourseSchedule,identification:1
+[2019-06-06 15:38:30,321][vert.x-eventloop-thread-7:3384]-[DEBUG]-mysql verticle recived QueryMessage,identification:1
+[2019-06-06 15:38:30,322][vert.x-eventloop-thread-7:3385]-[INFO]-schedule task hash :mcg-database-selector-seat0
+[2019-06-06 15:38:30,322][vert.x-eventloop-thread-7:3385]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00003-001'),identification:1
+[2019-06-06 15:38:30,371][vert.x-eventloop-thread-7:3434]-[DEBUG]-mysql query done,identification:1
+[2019-06-06 15:38:30,373][vert.x-eventloop-thread-2:3436]-[DEBUG]-try getStudentCourses,identification:1
+[2019-06-06 15:38:30,373][vert.x-eventloop-thread-2:3436]-[INFO]-selector.hash_from_student_id
+[2019-06-06 15:38:30,373][vert.x-eventloop-thread-2:3436]-[ERROR]-select course failed,student_id:1400101320,courses_wanted:[cjlu-00003-001]
+[2019-06-06 15:38:30,373][vert.x-eventloop-thread-2:3436]-[INFO]-select course operator done!identification:1,success:0,current time:1559806710373
+[2019-06-06 15:42:08,225][main:0]-[INFO]-System starting...
+[2019-06-06 15:42:08,310][main:85]-[DEBUG]-Using SLF4J as the default logging framework
+[2019-06-06 15:42:08,311][main:86]-[DEBUG]--D{}: {}
+[2019-06-06 15:42:08,311][main:86]-[DEBUG]--D{}: {}
+[2019-06-06 15:42:08,325][main:100]-[DEBUG]--Dio.netty.eventLoopThreads: {}
+[2019-06-06 15:42:08,342][main:117]-[DEBUG]--Dio.netty.noKeySetOptimization: {}
+[2019-06-06 15:42:08,342][main:117]-[DEBUG]--Dio.netty.selectorAutoRebuildThreshold: {}
+[2019-06-06 15:42:08,354][main:129]-[DEBUG]--Dio.netty.noUnsafe: {}
+[2019-06-06 15:42:08,354][main:129]-[DEBUG]-Java version: {}
+[2019-06-06 15:42:08,355][main:130]-[DEBUG]-sun.misc.Unsafe.theUnsafe: available
+[2019-06-06 15:42:08,355][main:130]-[DEBUG]-sun.misc.Unsafe.copyMemory: available
+[2019-06-06 15:42:08,356][main:131]-[DEBUG]-java.nio.Buffer.address: available
+[2019-06-06 15:42:08,356][main:131]-[DEBUG]-direct buffer constructor: available
+[2019-06-06 15:42:08,356][main:131]-[DEBUG]-java.nio.Bits.unaligned: available, {}
+[2019-06-06 15:42:08,357][main:132]-[DEBUG]-jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable prior to Java9
+[2019-06-06 15:42:08,357][main:132]-[DEBUG]-java.nio.DirectByteBuffer.<init>(long, int): {}
+[2019-06-06 15:42:08,357][main:132]-[DEBUG]-sun.misc.Unsafe: {}
+[2019-06-06 15:42:08,357][main:132]-[DEBUG]--Dio.netty.tmpdir: {} (java.io.tmpdir)
+[2019-06-06 15:42:08,357][main:132]-[DEBUG]--Dio.netty.bitMode: {} (sun.arch.data.model)
+[2019-06-06 15:42:08,358][main:133]-[DEBUG]--Dio.netty.maxDirectMemory: {} bytes
+[2019-06-06 15:42:08,358][main:133]-[DEBUG]--Dio.netty.uninitializedArrayAllocationThreshold: {}
+[2019-06-06 15:42:08,359][main:134]-[DEBUG]-java.nio.ByteBuffer.cleaner(): available
+[2019-06-06 15:42:08,359][main:134]-[DEBUG]--Dio.netty.noPreferDirect: {}
+[2019-06-06 15:42:08,364][main:139]-[DEBUG]-org.jctools-core.MpscChunkedArrayQueue: available
+[2019-06-06 15:42:08,388][main:163]-[DEBUG]-Default DNS servers: {} (sun.net.dns.ResolverConfiguration)
+[2019-06-06 15:42:08,392][main:167]-[DEBUG]--Djava.net.preferIPv4Stack: {}
+[2019-06-06 15:42:08,392][main:167]-[DEBUG]--Djava.net.preferIPv6Addresses: {}
+[2019-06-06 15:42:08,393][main:168]-[DEBUG]-Loopback interface: {} ({}, {})
+[2019-06-06 15:42:08,393][main:168]-[DEBUG]-{}: {}
+[2019-06-06 15:42:08,480][vert.x-internal-blocking-0:255]-[DEBUG]--D{}: {}
+[2019-06-06 15:42:08,480][vert.x-internal-blocking-0:255]-[DEBUG]--D{}: {}
+[2019-06-06 15:42:08,481][vert.x-internal-blocking-0:256]-[DEBUG]-Loaded default ResourceLeakDetector: {}
+[2019-06-06 15:42:08,633][vert.x-eventloop-thread-1:408]-[INFO]-DBSelector initializing...
+[2019-06-06 15:42:08,634][vert.x-eventloop-thread-1:409]-[INFO]-allocating hash keys...
+[2019-06-06 15:42:08,634][vert.x-eventloop-thread-1:409]-[INFO]-bind hash and mysql...
+[2019-06-06 15:42:08,634][vert.x-eventloop-thread-1:409]-[INFO]-DBSelector initialized
+[2019-06-06 15:42:08,657][vert.x-eventloop-thread-7:432]-[INFO]-mysql verticle start...
+[2019-06-06 15:42:08,847][vert.x-eventloop-thread-5:622]-[DEBUG]--Dio.netty.allocator.numHeapArenas: {}
+[2019-06-06 15:42:08,847][vert.x-eventloop-thread-5:622]-[DEBUG]--Dio.netty.allocator.numDirectArenas: {}
+[2019-06-06 15:42:08,847][vert.x-eventloop-thread-5:622]-[DEBUG]--Dio.netty.allocator.pageSize: {}
+[2019-06-06 15:42:08,847][vert.x-eventloop-thread-5:622]-[DEBUG]--Dio.netty.allocator.maxOrder: {}
+[2019-06-06 15:42:08,847][vert.x-eventloop-thread-5:622]-[DEBUG]--Dio.netty.allocator.chunkSize: {}
+[2019-06-06 15:42:08,847][vert.x-eventloop-thread-5:622]-[DEBUG]--Dio.netty.allocator.tinyCacheSize: {}
+[2019-06-06 15:42:08,848][vert.x-eventloop-thread-5:623]-[DEBUG]--Dio.netty.allocator.smallCacheSize: {}
+[2019-06-06 15:42:08,848][vert.x-eventloop-thread-5:623]-[DEBUG]--Dio.netty.allocator.normalCacheSize: {}
+[2019-06-06 15:42:08,848][vert.x-eventloop-thread-5:623]-[DEBUG]--Dio.netty.allocator.maxCachedBufferCapacity: {}
+[2019-06-06 15:42:08,848][vert.x-eventloop-thread-5:623]-[DEBUG]--Dio.netty.allocator.cacheTrimInterval: {}
+[2019-06-06 15:42:08,848][vert.x-eventloop-thread-5:623]-[DEBUG]--Dio.netty.allocator.useCacheForAllThreads: {}
+[2019-06-06 15:42:08,849][vert.x-eventloop-thread-5:624]-[DEBUG]--Dio.netty.threadLocalMap.stringBuilder.initialSize: {}
+[2019-06-06 15:42:08,849][vert.x-eventloop-thread-5:624]-[DEBUG]--Dio.netty.threadLocalMap.stringBuilder.maxSize: {}
+[2019-06-06 15:42:08,900][vert.x-eventloop-thread-5:675]-[DEBUG]--Dio.netty.processId: {} (auto-detected)
+[2019-06-06 15:42:08,903][vert.x-eventloop-thread-5:678]-[DEBUG]--Dio.netty.machineId: {} (auto-detected)
+[2019-06-06 15:42:08,921][vert.x-eventloop-thread-5:696]-[DEBUG]--Dio.netty.allocator.type: {}
+[2019-06-06 15:42:08,922][vert.x-eventloop-thread-5:697]-[DEBUG]--Dio.netty.threadLocalDirectBufferSize: {}
+[2019-06-06 15:42:08,922][vert.x-eventloop-thread-5:697]-[DEBUG]--Dio.netty.maxThreadLocalCharBufferSize: {}
+[2019-06-06 15:42:09,190][vert.x-eventloop-thread-0:965]-[DEBUG]-Channel became active
+[2019-06-06 15:42:09,191][vert.x-eventloop-thread-1:966]-[DEBUG]-Channel became active
+[2019-06-06 15:42:09,192][vert.x-eventloop-thread-2:967]-[DEBUG]-Channel became active
+[2019-06-06 15:42:09,192][vert.x-eventloop-thread-2:967]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:42:09,193][vert.x-eventloop-thread-1:968]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:42:09,193][vert.x-eventloop-thread-0:968]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:42:09,193][vert.x-eventloop-thread-3:968]-[DEBUG]-Channel became active
+[2019-06-06 15:42:09,193][vert.x-eventloop-thread-3:968]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:42:09,203][vert.x-eventloop-thread-1:978]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:42:09,204][vert.x-eventloop-thread-3:979]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:42:09,204][vert.x-eventloop-thread-0:979]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:42:09,205][vert.x-eventloop-thread-2:980]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:42:09,212][vert.x-eventloop-thread-2:987]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,230,[B@1df4e14c,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:42:09,212][vert.x-eventloop-thread-1:987]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,229,[B@480285ca,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:42:09,212][vert.x-eventloop-thread-3:987]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,231,[B@56187961,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:42:09,212][vert.x-eventloop-thread-0:987]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,228,[B@2fb10433,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:42:09,214][vert.x-eventloop-thread-7:989]-[INFO]-initialize mysql connections use mysql configurate:{"host":"127.0.0.1","port":3306,"username":"memetao","password":"123456","maxPoolSize":4,"database":"mcg","queryTimeout":1000}
+[2019-06-06 15:42:09,233][vert.x-eventloop-thread-0:1008]-[DEBUG]--Dio.netty.recycler.maxCapacityPerThread: {}
+[2019-06-06 15:42:09,233][vert.x-eventloop-thread-0:1008]-[DEBUG]--Dio.netty.recycler.maxSharedCapacityFactor: {}
+[2019-06-06 15:42:09,233][vert.x-eventloop-thread-0:1008]-[DEBUG]--Dio.netty.recycler.linkCapacity: {}
+[2019-06-06 15:42:09,233][vert.x-eventloop-thread-0:1008]-[DEBUG]--Dio.netty.recycler.ratio: {}
+[2019-06-06 15:42:09,236][vert.x-eventloop-thread-3:1011]-[DEBUG]-Connected to database
+[2019-06-06 15:42:09,236][vert.x-eventloop-thread-1:1011]-[DEBUG]-Connected to database
+[2019-06-06 15:42:09,237][vert.x-eventloop-thread-2:1012]-[DEBUG]-Connected to database
+[2019-06-06 15:42:09,237][vert.x-eventloop-thread-0:1012]-[DEBUG]-Connected to database
+[2019-06-06 15:42:13,459][vert.x-eventloop-thread-3:5234]-[DEBUG]--Dio.netty.noJdkZlibDecoder: {}
+[2019-06-06 15:42:13,459][vert.x-eventloop-thread-3:5234]-[DEBUG]--Dio.netty.noJdkZlibEncoder: {}
+[2019-06-06 15:42:13,535][vert.x-eventloop-thread-3:5310]-[INFO]-recived select course request,uid:1400301285,courseids:[cjlu-00008-003],identification:1
+[2019-06-06 15:42:13,541][vert.x-eventloop-thread-2:5316]-[INFO]-current task queue size:1,schedule...identification:1
+[2019-06-06 15:42:13,542][vert.x-eventloop-thread-2:5317]-[INFO]-SelectCourse Task running,identification:1
+[2019-06-06 15:42:13,542][vert.x-eventloop-thread-2:5317]-[DEBUG]-try getCourseSchedule,identification:1
+[2019-06-06 15:42:13,544][vert.x-eventloop-thread-7:5319]-[DEBUG]-mysql verticle recived QueryMessage,identification:1
+[2019-06-06 15:42:13,544][vert.x-eventloop-thread-7:5319]-[INFO]-schedule task hash :mcg-database-selector-seat0
+[2019-06-06 15:42:13,544][vert.x-eventloop-thread-7:5319]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00008-003'),identification:1
+[2019-06-06 15:42:13,595][vert.x-eventloop-thread-7:5370]-[DEBUG]-mysql query done,identification:1
+[2019-06-06 15:42:13,598][vert.x-eventloop-thread-2:5373]-[DEBUG]-try getStudentCourses,identification:1
+[2019-06-06 15:42:13,600][vert.x-eventloop-thread-7:5375]-[DEBUG]-mysql verticle recived QueryMessage,identification:1
+[2019-06-06 15:42:13,600][vert.x-eventloop-thread-7:5375]-[INFO]-schedule task hash :mcg-database-selector-seat0
+[2019-06-06 15:42:13,600][vert.x-eventloop-thread-7:5375]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400301285',identification:1
+[2019-06-06 15:42:13,611][vert.x-eventloop-thread-7:5386]-[DEBUG]-mysql query done,identification:1
+[2019-06-06 15:42:13,612][vert.x-eventloop-thread-2:5387]-[DEBUG]-try getCourseSchedule,identification:1
+[2019-06-06 15:42:13,612][vert.x-eventloop-thread-7:5387]-[DEBUG]-mysql verticle recived QueryMessage,identification:1
+[2019-06-06 15:42:13,612][vert.x-eventloop-thread-7:5387]-[INFO]-schedule task hash :mcg-database-selector-seat0
+[2019-06-06 15:42:13,613][vert.x-eventloop-thread-7:5388]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00001-002','cjlu-00015-003','cjlu-00024-003','cjlu-00024-001','cjlu-00005-002'),identification:1
+[2019-06-06 15:42:13,635][vert.x-eventloop-thread-7:5410]-[DEBUG]-mysql query done,identification:1
+[2019-06-06 15:42:13,640][vert.x-eventloop-thread-2:5415]-[DEBUG]-get student course done,identification:1
+[2019-06-06 15:42:13,643][vert.x-eventloop-thread-2:5418]-[DEBUG]-try updateRemain( cjlu-00008-003),identification:1
+[2019-06-06 15:42:13,645][vert.x-eventloop-thread-7:5420]-[DEBUG]-mysql verticle recived UpdateMessage,identification:1
+[2019-06-06 15:42:13,645][vert.x-eventloop-thread-7:5420]-[INFO]-schedule task hash :mcg-database-selector-seat0
+[2019-06-06 15:42:13,645][vert.x-eventloop-thread-7:5420]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00008-003',identification:1
+[2019-06-06 15:42:13,652][vert.x-eventloop-thread-7:5427]-[DEBUG]-mysql update done,identification:1
+[2019-06-06 15:42:13,653][vert.x-eventloop-thread-2:5428]-[DEBUG]-updateRemain done,identification:1
+[2019-06-06 15:42:13,653][vert.x-eventloop-thread-2:5428]-[DEBUG]-try addElectiveCourse,identification:1
+[2019-06-06 15:42:13,654][vert.x-eventloop-thread-7:5429]-[DEBUG]-mysql verticle recived UpdateMessage,identification:1
+[2019-06-06 15:42:13,654][vert.x-eventloop-thread-7:5429]-[INFO]-schedule task hash :mcg-database-selector-seat0
+[2019-06-06 15:42:13,654][vert.x-eventloop-thread-7:5429]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100001','cjlu-00008-003'),identification:1
+[2019-06-06 15:42:13,659][vert.x-eventloop-thread-7:5434]-[DEBUG]-mysql update done,identification:1
+[2019-06-06 15:42:13,659][vert.x-eventloop-thread-2:5434]-[DEBUG]-add elective course done,identification:1
+[2019-06-06 15:42:13,659][vert.x-eventloop-thread-2:5434]-[INFO]-select course operator done!identification:1,success:1,current time:1559806933659
+[2019-06-06 15:44:16,050][main:1]-[INFO]-System starting...
+[2019-06-06 15:44:16,136][main:87]-[DEBUG]-Using SLF4J as the default logging framework
+[2019-06-06 15:44:16,137][main:88]-[DEBUG]--D{}: {}
+[2019-06-06 15:44:16,137][main:88]-[DEBUG]--D{}: {}
+[2019-06-06 15:44:16,153][main:104]-[DEBUG]--Dio.netty.eventLoopThreads: {}
+[2019-06-06 15:44:16,171][main:122]-[DEBUG]--Dio.netty.noKeySetOptimization: {}
+[2019-06-06 15:44:16,171][main:122]-[DEBUG]--Dio.netty.selectorAutoRebuildThreshold: {}
+[2019-06-06 15:44:16,184][main:135]-[DEBUG]--Dio.netty.noUnsafe: {}
+[2019-06-06 15:44:16,184][main:135]-[DEBUG]-Java version: {}
+[2019-06-06 15:44:16,185][main:136]-[DEBUG]-sun.misc.Unsafe.theUnsafe: available
+[2019-06-06 15:44:16,185][main:136]-[DEBUG]-sun.misc.Unsafe.copyMemory: available
+[2019-06-06 15:44:16,186][main:137]-[DEBUG]-java.nio.Buffer.address: available
+[2019-06-06 15:44:16,186][main:137]-[DEBUG]-direct buffer constructor: available
+[2019-06-06 15:44:16,187][main:138]-[DEBUG]-java.nio.Bits.unaligned: available, {}
+[2019-06-06 15:44:16,187][main:138]-[DEBUG]-jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable prior to Java9
+[2019-06-06 15:44:16,187][main:138]-[DEBUG]-java.nio.DirectByteBuffer.<init>(long, int): {}
+[2019-06-06 15:44:16,187][main:138]-[DEBUG]-sun.misc.Unsafe: {}
+[2019-06-06 15:44:16,187][main:138]-[DEBUG]--Dio.netty.tmpdir: {} (java.io.tmpdir)
+[2019-06-06 15:44:16,187][main:138]-[DEBUG]--Dio.netty.bitMode: {} (sun.arch.data.model)
+[2019-06-06 15:44:16,188][main:139]-[DEBUG]--Dio.netty.maxDirectMemory: {} bytes
+[2019-06-06 15:44:16,188][main:139]-[DEBUG]--Dio.netty.uninitializedArrayAllocationThreshold: {}
+[2019-06-06 15:44:16,189][main:140]-[DEBUG]-java.nio.ByteBuffer.cleaner(): available
+[2019-06-06 15:44:16,189][main:140]-[DEBUG]--Dio.netty.noPreferDirect: {}
+[2019-06-06 15:44:16,194][main:145]-[DEBUG]-org.jctools-core.MpscChunkedArrayQueue: available
+[2019-06-06 15:44:16,219][main:170]-[DEBUG]-Default DNS servers: {} (sun.net.dns.ResolverConfiguration)
+[2019-06-06 15:44:16,222][main:173]-[DEBUG]--Djava.net.preferIPv4Stack: {}
+[2019-06-06 15:44:16,222][main:173]-[DEBUG]--Djava.net.preferIPv6Addresses: {}
+[2019-06-06 15:44:16,223][main:174]-[DEBUG]-Loopback interface: {} ({}, {})
+[2019-06-06 15:44:16,224][main:175]-[DEBUG]-{}: {}
+[2019-06-06 15:44:16,307][vert.x-internal-blocking-0:258]-[DEBUG]--D{}: {}
+[2019-06-06 15:44:16,307][vert.x-internal-blocking-0:258]-[DEBUG]--D{}: {}
+[2019-06-06 15:44:16,308][vert.x-internal-blocking-0:259]-[DEBUG]-Loaded default ResourceLeakDetector: {}
+[2019-06-06 15:44:16,461][vert.x-eventloop-thread-1:412]-[INFO]-DBSelector initializing...
+[2019-06-06 15:44:16,461][vert.x-eventloop-thread-1:412]-[INFO]-allocating hash keys...
+[2019-06-06 15:44:16,461][vert.x-eventloop-thread-1:412]-[INFO]-bind hash and mysql...
+[2019-06-06 15:44:16,462][vert.x-eventloop-thread-1:413]-[INFO]-DBSelector initialized
+[2019-06-06 15:44:16,477][vert.x-eventloop-thread-7:428]-[INFO]-mysql verticle start...
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.numHeapArenas: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.numDirectArenas: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.pageSize: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.maxOrder: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.chunkSize: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.tinyCacheSize: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.smallCacheSize: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.normalCacheSize: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.maxCachedBufferCapacity: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.cacheTrimInterval: {}
+[2019-06-06 15:44:16,686][vert.x-eventloop-thread-4:637]-[DEBUG]--Dio.netty.allocator.useCacheForAllThreads: {}
+[2019-06-06 15:44:16,688][vert.x-eventloop-thread-4:639]-[DEBUG]--Dio.netty.threadLocalMap.stringBuilder.initialSize: {}
+[2019-06-06 15:44:16,688][vert.x-eventloop-thread-4:639]-[DEBUG]--Dio.netty.threadLocalMap.stringBuilder.maxSize: {}
+[2019-06-06 15:44:16,748][vert.x-eventloop-thread-4:699]-[DEBUG]--Dio.netty.processId: {} (auto-detected)
+[2019-06-06 15:44:16,751][vert.x-eventloop-thread-4:702]-[DEBUG]--Dio.netty.machineId: {} (auto-detected)
+[2019-06-06 15:44:16,766][vert.x-eventloop-thread-4:717]-[DEBUG]--Dio.netty.allocator.type: {}
+[2019-06-06 15:44:16,766][vert.x-eventloop-thread-4:717]-[DEBUG]--Dio.netty.threadLocalDirectBufferSize: {}
+[2019-06-06 15:44:16,766][vert.x-eventloop-thread-4:717]-[DEBUG]--Dio.netty.maxThreadLocalCharBufferSize: {}
+[2019-06-06 15:44:17,022][vert.x-eventloop-thread-0:973]-[DEBUG]-Channel became active
+[2019-06-06 15:44:17,023][vert.x-eventloop-thread-0:974]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:44:17,026][vert.x-eventloop-thread-1:977]-[DEBUG]-Channel became active
+[2019-06-06 15:44:17,026][vert.x-eventloop-thread-1:977]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:44:17,029][vert.x-eventloop-thread-2:980]-[DEBUG]-Channel became active
+[2019-06-06 15:44:17,029][vert.x-eventloop-thread-2:980]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:44:17,030][vert.x-eventloop-thread-3:981]-[DEBUG]-Channel became active
+[2019-06-06 15:44:17,030][vert.x-eventloop-thread-3:981]-[DEBUG]-Connected to /127.0.0.1:3306
+[2019-06-06 15:44:17,037][vert.x-eventloop-thread-3:988]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:44:17,040][vert.x-eventloop-thread-2:991]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:44:17,043][vert.x-eventloop-thread-1:994]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:44:17,045][vert.x-eventloop-thread-0:996]-[DEBUG]-Auth plugin data length was 21
+[2019-06-06 15:44:17,051][vert.x-eventloop-thread-2:1002]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,234,[B@1b21bce9,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:44:17,051][vert.x-eventloop-thread-1:1002]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,233,[B@4ec557e4,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:44:17,052][vert.x-eventloop-thread-0:1003]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,232,[B@23bec3cd,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:44:17,053][vert.x-eventloop-thread-3:1004]-[DEBUG]-handshake message was HandshakeMessage(5.7.26-0ubuntu0.18.04.1,235,[B@3711ed2f,-2113931265,8,2,mysql_native_password)
+[2019-06-06 15:44:17,061][vert.x-eventloop-thread-7:1012]-[INFO]-initialize mysql connections use mysql configurate:{"host":"127.0.0.1","port":3306,"username":"memetao","password":"123456","maxPoolSize":4,"database":"mcg","queryTimeout":1000}
+[2019-06-06 15:44:17,075][vert.x-eventloop-thread-1:1026]-[DEBUG]--Dio.netty.recycler.maxCapacityPerThread: {}
+[2019-06-06 15:44:17,075][vert.x-eventloop-thread-1:1026]-[DEBUG]--Dio.netty.recycler.maxSharedCapacityFactor: {}
+[2019-06-06 15:44:17,075][vert.x-eventloop-thread-1:1026]-[DEBUG]--Dio.netty.recycler.linkCapacity: {}
+[2019-06-06 15:44:17,075][vert.x-eventloop-thread-1:1026]-[DEBUG]--Dio.netty.recycler.ratio: {}
+[2019-06-06 15:44:17,077][vert.x-eventloop-thread-2:1028]-[DEBUG]-Connected to database
+[2019-06-06 15:44:17,077][vert.x-eventloop-thread-1:1028]-[DEBUG]-Connected to database
+[2019-06-06 15:44:17,078][vert.x-eventloop-thread-3:1029]-[DEBUG]-Connected to database
+[2019-06-06 15:44:17,078][vert.x-eventloop-thread-0:1029]-[DEBUG]-Connected to database
+[2019-06-06 15:44:30,432][vert.x-eventloop-thread-6:14383]-[DEBUG]--Dio.netty.noJdkZlibDecoder: {}
+[2019-06-06 15:44:30,432][vert.x-eventloop-thread-6:14383]-[DEBUG]--Dio.netty.noJdkZlibEncoder: {}
+[2019-06-06 15:44:30,507][vert.x-eventloop-thread-6:14458]-[INFO]-recived select course request,uid:1400300699,courseids:[cjlu-00025-003],identification:1
+[2019-06-06 15:44:30,513][vert.x-eventloop-thread-2:14464]-[INFO]-current task queue size:1,schedule...identification:1
+[2019-06-06 15:44:30,514][vert.x-eventloop-thread-2:14465]-[INFO]-SelectCourse Task running,identification:1
+[2019-06-06 15:44:30,515][vert.x-eventloop-thread-2:14466]-[DEBUG]-try getCourseSchedule,identification:1
+[2019-06-06 15:44:30,516][vert.x-eventloop-thread-7:14467]-[DEBUG]-mysql verticle recived QueryMessage,identification:1
+[2019-06-06 15:44:30,517][vert.x-eventloop-thread-7:14468]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00025-003'),identification:1
+[2019-06-06 15:44:30,520][vert.x-eventloop-thread-6:14471]-[INFO]-recived select course request,uid:1400100883,courseids:[cjlu-00021-001],identification:2
+[2019-06-06 15:44:30,525][vert.x-eventloop-thread-2:14476]-[INFO]-current task queue size:1,schedule...identification:2
+[2019-06-06 15:44:30,525][vert.x-eventloop-thread-2:14476]-[INFO]-SelectCourse Task running,identification:2
+[2019-06-06 15:44:30,525][vert.x-eventloop-thread-2:14476]-[DEBUG]-try getCourseSchedule,identification:2
+[2019-06-06 15:44:30,525][vert.x-eventloop-thread-7:14476]-[DEBUG]-mysql verticle recived QueryMessage,identification:2
+[2019-06-06 15:44:30,525][vert.x-eventloop-thread-7:14476]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00021-001'),identification:2
+[2019-06-06 15:44:30,526][vert.x-eventloop-thread-6:14477]-[INFO]-recived select course request,uid:1400200941,courseids:[cjlu-00002-002],identification:3
+[2019-06-06 15:44:30,564][vert.x-eventloop-thread-2:14515]-[INFO]-current task queue size:1,schedule...identification:3
+[2019-06-06 15:44:30,564][vert.x-eventloop-thread-2:14515]-[INFO]-SelectCourse Task running,identification:3
+[2019-06-06 15:44:30,564][vert.x-eventloop-thread-2:14515]-[DEBUG]-try getCourseSchedule,identification:3
+[2019-06-06 15:44:30,566][vert.x-eventloop-thread-6:14517]-[INFO]-recived select course request,uid:1400100139,courseids:[cjlu-00019-001],identification:4
+[2019-06-06 15:44:30,566][vert.x-eventloop-thread-2:14517]-[INFO]-current task queue size:1,schedule...identification:4
+[2019-06-06 15:44:30,566][vert.x-eventloop-thread-2:14517]-[INFO]-SelectCourse Task running,identification:4
+[2019-06-06 15:44:30,566][vert.x-eventloop-thread-2:14517]-[DEBUG]-try getCourseSchedule,identification:4
+[2019-06-06 15:44:30,568][vert.x-eventloop-thread-6:14519]-[INFO]-recived select course request,uid:1400100619,courseids:[cjlu-00009-001],identification:5
+[2019-06-06 15:44:30,569][vert.x-eventloop-thread-2:14520]-[INFO]-current task queue size:1,schedule...identification:5
+[2019-06-06 15:44:30,569][vert.x-eventloop-thread-2:14520]-[INFO]-SelectCourse Task running,identification:5
+[2019-06-06 15:44:30,569][vert.x-eventloop-thread-2:14520]-[DEBUG]-try getCourseSchedule,identification:5
+[2019-06-06 15:44:30,570][vert.x-eventloop-thread-6:14521]-[INFO]-recived select course request,uid:1400300922,courseids:[cjlu-00022-003],identification:6
+[2019-06-06 15:44:30,571][vert.x-eventloop-thread-2:14522]-[INFO]-current task queue size:1,schedule...identification:6
+[2019-06-06 15:44:30,571][vert.x-eventloop-thread-2:14522]-[INFO]-SelectCourse Task running,identification:6
+[2019-06-06 15:44:30,571][vert.x-eventloop-thread-2:14522]-[DEBUG]-try getCourseSchedule,identification:6
+[2019-06-06 15:44:30,575][vert.x-eventloop-thread-6:14526]-[INFO]-recived select course request,uid:1400300530,courseids:[cjlu-00004-003],identification:7
+[2019-06-06 15:44:30,576][vert.x-eventloop-thread-2:14527]-[INFO]-current task queue size:1,schedule...identification:7
+[2019-06-06 15:44:30,576][vert.x-eventloop-thread-2:14527]-[INFO]-SelectCourse Task running,identification:7
+[2019-06-06 15:44:30,576][vert.x-eventloop-thread-2:14527]-[DEBUG]-try getCourseSchedule,identification:7
+[2019-06-06 15:44:30,577][vert.x-eventloop-thread-6:14528]-[INFO]-recived select course request,uid:1400200056,courseids:[cjlu-00016-002],identification:8
+[2019-06-06 15:44:30,578][vert.x-eventloop-thread-2:14529]-[INFO]-current task queue size:1,schedule...identification:8
+[2019-06-06 15:44:30,578][vert.x-eventloop-thread-2:14529]-[INFO]-SelectCourse Task running,identification:8
+[2019-06-06 15:44:30,578][vert.x-eventloop-thread-2:14529]-[DEBUG]-try getCourseSchedule,identification:8
+[2019-06-06 15:44:30,579][vert.x-eventloop-thread-6:14530]-[INFO]-recived select course request,uid:1400100654,courseids:[cjlu-00021-001],identification:9
+[2019-06-06 15:44:30,580][vert.x-eventloop-thread-2:14531]-[INFO]-current task queue size:1,schedule...identification:9
+[2019-06-06 15:44:30,580][vert.x-eventloop-thread-2:14531]-[INFO]-SelectCourse Task running,identification:9
+[2019-06-06 15:44:30,580][vert.x-eventloop-thread-2:14531]-[DEBUG]-try getCourseSchedule,identification:9
+[2019-06-06 15:44:30,581][vert.x-eventloop-thread-6:14532]-[INFO]-recived select course request,uid:1400301250,courseids:[cjlu-00015-003],identification:10
+[2019-06-06 15:44:30,582][vert.x-eventloop-thread-2:14533]-[INFO]-current task queue size:1,schedule...identification:10
+[2019-06-06 15:44:30,582][vert.x-eventloop-thread-2:14533]-[INFO]-SelectCourse Task running,identification:10
+[2019-06-06 15:44:30,582][vert.x-eventloop-thread-2:14533]-[DEBUG]-try getCourseSchedule,identification:10
+[2019-06-06 15:44:30,583][vert.x-eventloop-thread-7:14534]-[DEBUG]-mysql query done,identification:1
+[2019-06-06 15:44:30,584][vert.x-eventloop-thread-7:14535]-[DEBUG]-mysql query done,identification:2
+[2019-06-06 15:44:30,585][vert.x-eventloop-thread-7:14536]-[DEBUG]-mysql verticle recived QueryMessage,identification:3
+[2019-06-06 15:44:30,585][vert.x-eventloop-thread-2:14536]-[DEBUG]-try getStudentCourses,identification:1
+[2019-06-06 15:44:30,585][vert.x-eventloop-thread-7:14536]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00002-002'),identification:3
+[2019-06-06 15:44:30,585][vert.x-eventloop-thread-7:14536]-[DEBUG]-mysql verticle recived QueryMessage,identification:4
+[2019-06-06 15:44:30,586][vert.x-eventloop-thread-7:14537]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00019-001'),identification:4
+[2019-06-06 15:44:30,586][vert.x-eventloop-thread-7:14537]-[DEBUG]-mysql verticle recived QueryMessage,identification:5
+[2019-06-06 15:44:30,586][vert.x-eventloop-thread-7:14537]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00009-001'),identification:5
+[2019-06-06 15:44:30,588][vert.x-eventloop-thread-2:14539]-[DEBUG]-try getStudentCourses,identification:2
+[2019-06-06 15:44:30,590][vert.x-eventloop-thread-7:14541]-[DEBUG]-mysql verticle recived QueryMessage,identification:6
+[2019-06-06 15:44:30,590][vert.x-eventloop-thread-7:14541]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00022-003'),identification:6
+[2019-06-06 15:44:30,615][vert.x-eventloop-thread-7:14566]-[DEBUG]-mysql query done,identification:6
+[2019-06-06 15:44:30,615][vert.x-eventloop-thread-7:14566]-[DEBUG]-mysql verticle recived QueryMessage,identification:7
+[2019-06-06 15:44:30,615][vert.x-eventloop-thread-7:14566]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00004-003'),identification:7
+[2019-06-06 15:44:30,616][vert.x-eventloop-thread-2:14567]-[DEBUG]-try getStudentCourses,identification:6
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[DEBUG]-mysql verticle recived QueryMessage,identification:8
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[DEBUG]-mysql verticle recived QueryMessage,identification:9
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[DEBUG]-mysql verticle recived QueryMessage,identification:10
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[DEBUG]-mysql verticle recived QueryMessage,identification:1
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[DEBUG]-mysql verticle recived QueryMessage,identification:2
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,617][vert.x-eventloop-thread-7:14568]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,618][vert.x-eventloop-thread-7:14569]-[DEBUG]-mysql query done,identification:4
+[2019-06-06 15:44:30,618][vert.x-eventloop-thread-7:14569]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00016-002'),identification:8
+[2019-06-06 15:44:30,619][vert.x-eventloop-thread-7:14570]-[DEBUG]-mysql query done,identification:5
+[2019-06-06 15:44:30,619][vert.x-eventloop-thread-7:14570]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00021-001'),identification:9
+[2019-06-06 15:44:30,620][vert.x-eventloop-thread-7:14571]-[DEBUG]-mysql query done,identification:3
+[2019-06-06 15:44:30,621][vert.x-eventloop-thread-7:14572]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00015-003'),identification:10
+[2019-06-06 15:44:30,623][vert.x-eventloop-thread-2:14574]-[DEBUG]-try getStudentCourses,identification:4
+[2019-06-06 15:44:30,631][vert.x-eventloop-thread-2:14582]-[DEBUG]-try getStudentCourses,identification:5
+[2019-06-06 15:44:30,632][vert.x-eventloop-thread-2:14583]-[DEBUG]-try getStudentCourses,identification:3
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[DEBUG]-mysql verticle recived QueryMessage,identification:6
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[DEBUG]-mysql verticle recived QueryMessage,identification:4
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,636][vert.x-eventloop-thread-7:14587]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,637][vert.x-eventloop-thread-7:14588]-[DEBUG]-mysql query done,identification:7
+[2019-06-06 15:44:30,637][vert.x-eventloop-thread-7:14588]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400300699',identification:1
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[DEBUG]-mysql query done,identification:10
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-2:14589]-[DEBUG]-try getStudentCourses,identification:7
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400100883',identification:2
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[DEBUG]-mysql verticle recived QueryMessage,identification:5
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[DEBUG]-mysql verticle recived QueryMessage,identification:3
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,638][vert.x-eventloop-thread-7:14589]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,639][vert.x-eventloop-thread-2:14590]-[DEBUG]-try getStudentCourses,identification:10
+[2019-06-06 15:44:30,640][vert.x-eventloop-thread-7:14591]-[DEBUG]-mysql query done,identification:9
+[2019-06-06 15:44:30,640][vert.x-eventloop-thread-7:14591]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400300922',identification:6
+[2019-06-06 15:44:30,641][vert.x-eventloop-thread-7:14592]-[DEBUG]-mysql query done,identification:8
+[2019-06-06 15:44:30,641][vert.x-eventloop-thread-7:14592]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400100139',identification:4
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[DEBUG]-mysql verticle recived QueryMessage,identification:7
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[DEBUG]-mysql verticle recived QueryMessage,identification:10
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-7:14593]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,642][vert.x-eventloop-thread-2:14593]-[DEBUG]-try getStudentCourses,identification:9
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[DEBUG]-mysql verticle recived QueryMessage,identification:9
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-2:14594]-[DEBUG]-try getStudentCourses,identification:8
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[DEBUG]-mysql verticle recived QueryMessage,identification:8
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,643][vert.x-eventloop-thread-7:14594]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,644][vert.x-eventloop-thread-7:14595]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,644][vert.x-eventloop-thread-7:14595]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,644][vert.x-eventloop-thread-7:14595]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,657][vert.x-eventloop-thread-7:14608]-[DEBUG]-mysql query done,identification:2
+[2019-06-06 15:44:30,657][vert.x-eventloop-thread-7:14608]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400100619',identification:5
+[2019-06-06 15:44:30,658][vert.x-eventloop-thread-2:14609]-[DEBUG]-try getCourseSchedule,identification:2
+[2019-06-06 15:44:30,658][vert.x-eventloop-thread-7:14609]-[DEBUG]-mysql verticle recived QueryMessage,identification:2
+[2019-06-06 15:44:30,658][vert.x-eventloop-thread-7:14609]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,658][vert.x-eventloop-thread-7:14609]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,658][vert.x-eventloop-thread-7:14609]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,658][vert.x-eventloop-thread-7:14609]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,658][vert.x-eventloop-thread-7:14609]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,658][vert.x-eventloop-thread-7:14609]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,659][vert.x-eventloop-thread-7:14610]-[DEBUG]-mysql query done,identification:4
+[2019-06-06 15:44:30,659][vert.x-eventloop-thread-7:14610]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400200941',identification:3
+[2019-06-06 15:44:30,660][vert.x-eventloop-thread-2:14611]-[DEBUG]-try getCourseSchedule,identification:4
+[2019-06-06 15:44:30,661][vert.x-eventloop-thread-7:14612]-[DEBUG]-mysql query done,identification:1
+[2019-06-06 15:44:30,661][vert.x-eventloop-thread-7:14612]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400300530',identification:7
+[2019-06-06 15:44:30,662][vert.x-eventloop-thread-7:14613]-[DEBUG]-mysql verticle recived QueryMessage,identification:4
+[2019-06-06 15:44:30,662][vert.x-eventloop-thread-7:14613]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,662][vert.x-eventloop-thread-7:14613]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,662][vert.x-eventloop-thread-7:14613]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,662][vert.x-eventloop-thread-7:14613]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,662][vert.x-eventloop-thread-7:14613]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,668][vert.x-eventloop-thread-2:14619]-[DEBUG]-try getCourseSchedule,identification:1
+[2019-06-06 15:44:30,668][vert.x-eventloop-thread-7:14619]-[DEBUG]-mysql query done,identification:6
+[2019-06-06 15:44:30,672][vert.x-eventloop-thread-7:14623]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400301250',identification:10
+[2019-06-06 15:44:30,672][vert.x-eventloop-thread-2:14623]-[DEBUG]-try getCourseSchedule,identification:6
+[2019-06-06 15:44:30,673][vert.x-eventloop-thread-7:14624]-[DEBUG]-mysql query done,identification:5
+[2019-06-06 15:44:30,673][vert.x-eventloop-thread-7:14624]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400100654',identification:9
+[2019-06-06 15:44:30,674][vert.x-eventloop-thread-2:14625]-[DEBUG]-try getCourseSchedule,identification:5
+[2019-06-06 15:44:30,676][vert.x-eventloop-thread-7:14627]-[DEBUG]-mysql verticle recived QueryMessage,identification:1
+[2019-06-06 15:44:30,676][vert.x-eventloop-thread-7:14627]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,676][vert.x-eventloop-thread-7:14627]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,676][vert.x-eventloop-thread-7:14627]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,676][vert.x-eventloop-thread-7:14627]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,676][vert.x-eventloop-thread-7:14627]-[DEBUG]-mysql verticle recived QueryMessage,identification:6
+[2019-06-06 15:44:30,677][vert.x-eventloop-thread-7:14628]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,677][vert.x-eventloop-thread-7:14628]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,677][vert.x-eventloop-thread-7:14628]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,677][vert.x-eventloop-thread-7:14628]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,677][vert.x-eventloop-thread-7:14628]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,681][vert.x-eventloop-thread-7:14632]-[DEBUG]-mysql verticle recived QueryMessage,identification:5
+[2019-06-06 15:44:30,681][vert.x-eventloop-thread-7:14632]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,681][vert.x-eventloop-thread-7:14632]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,681][vert.x-eventloop-thread-7:14632]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,681][vert.x-eventloop-thread-7:14632]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,681][vert.x-eventloop-thread-7:14632]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,681][vert.x-eventloop-thread-7:14632]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[DEBUG]-mysql query done,identification:7
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[DEBUG]-mysql query:select code from mcg_student_course where student = '1400200056',identification:8
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-2:14633]-[DEBUG]-try getCourseSchedule,identification:7
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[DEBUG]-mysql query done,identification:3
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00024-002','cjlu-00001-003','cjlu-00003-002','cjlu-00003-001','cjlu-00017-001'),identification:2
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-2:14633]-[DEBUG]-try getCourseSchedule,identification:3
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[DEBUG]-mysql verticle recived QueryMessage,identification:7
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[DEBUG]-mysql verticle recived QueryMessage,identification:3
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,682][vert.x-eventloop-thread-7:14633]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,685][vert.x-eventloop-thread-7:14636]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,685][vert.x-eventloop-thread-7:14636]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,685][vert.x-eventloop-thread-7:14636]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,686][vert.x-eventloop-thread-7:14637]-[DEBUG]-mysql query done,identification:9
+[2019-06-06 15:44:30,686][vert.x-eventloop-thread-7:14637]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00007-001','cjlu-00022-002','cjlu-00003-004','cjlu-00021-004','cjlu-00015-004'),identification:4
+[2019-06-06 15:44:30,687][vert.x-eventloop-thread-7:14638]-[DEBUG]-mysql query done,identification:10
+[2019-06-06 15:44:30,690][vert.x-eventloop-thread-2:14641]-[DEBUG]-try getCourseSchedule,identification:9
+[2019-06-06 15:44:30,692][vert.x-eventloop-thread-7:14643]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00014-002','cjlu-00003-001','cjlu-00022-003','cjlu-00018-002','cjlu-00007-002'),identification:1
+[2019-06-06 15:44:30,692][vert.x-eventloop-thread-2:14643]-[DEBUG]-try getCourseSchedule,identification:10
+[2019-06-06 15:44:30,692][vert.x-eventloop-thread-7:14643]-[DEBUG]-mysql verticle recived QueryMessage,identification:9
+[2019-06-06 15:44:30,694][vert.x-eventloop-thread-7:14645]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,695][vert.x-eventloop-thread-7:14646]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,695][vert.x-eventloop-thread-7:14646]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,695][vert.x-eventloop-thread-7:14646]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,695][vert.x-eventloop-thread-7:14646]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,695][vert.x-eventloop-thread-7:14646]-[DEBUG]-mysql verticle recived QueryMessage,identification:10
+[2019-06-06 15:44:30,695][vert.x-eventloop-thread-7:14646]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,695][vert.x-eventloop-thread-7:14646]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,696][vert.x-eventloop-thread-7:14647]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,696][vert.x-eventloop-thread-7:14647]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,696][vert.x-eventloop-thread-7:14647]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,696][vert.x-eventloop-thread-7:14647]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,705][vert.x-eventloop-thread-7:14656]-[DEBUG]-mysql query done,identification:2
+[2019-06-06 15:44:30,705][vert.x-eventloop-thread-7:14656]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00005-003','cjlu-00002-004','cjlu-00023-001','cjlu-00023-004','cjlu-00018-003'),identification:6
+[2019-06-06 15:44:30,706][vert.x-eventloop-thread-7:14657]-[DEBUG]-mysql query done,identification:8
+[2019-06-06 15:44:30,706][vert.x-eventloop-thread-7:14657]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00013-003','cjlu-00005-004','cjlu-00006-004','cjlu-00019-002','cjlu-00004-001'),identification:5
+[2019-06-06 15:44:30,708][vert.x-eventloop-thread-2:14659]-[DEBUG]-get student course done,identification:2
+[2019-06-06 15:44:30,708][vert.x-eventloop-thread-7:14659]-[DEBUG]-mysql query done,identification:4
+[2019-06-06 15:44:30,708][vert.x-eventloop-thread-7:14659]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00021-002','cjlu-00021-004','cjlu-00022-003','cjlu-00013-001','cjlu-00022-001'),identification:7
+[2019-06-06 15:44:30,711][vert.x-eventloop-thread-2:14662]-[DEBUG]-try updateRemain( cjlu-00021-001),identification:2
+[2019-06-06 15:44:30,713][vert.x-eventloop-thread-7:14664]-[DEBUG]-mysql query done,identification:1
+[2019-06-06 15:44:30,713][vert.x-eventloop-thread-7:14664]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00016-001','cjlu-00023-001','cjlu-00016-002','cjlu-00003-004','cjlu-00009-003'),identification:3
+[2019-06-06 15:44:30,728][vert.x-eventloop-thread-2:14679]-[DEBUG]-try getCourseSchedule,identification:8
+[2019-06-06 15:44:30,730][vert.x-eventloop-thread-7:14681]-[DEBUG]-mysql verticle recived UpdateMessage,identification:2
+[2019-06-06 15:44:30,730][vert.x-eventloop-thread-7:14681]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,730][vert.x-eventloop-thread-7:14681]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,730][vert.x-eventloop-thread-7:14681]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,730][vert.x-eventloop-thread-2:14681]-[DEBUG]-get student course done,identification:4
+[2019-06-06 15:44:30,731][vert.x-eventloop-thread-7:14682]-[DEBUG]-mysql query done,identification:5
+[2019-06-06 15:44:30,731][vert.x-eventloop-thread-2:14682]-[DEBUG]-try updateRemain( cjlu-00019-001),identification:4
+[2019-06-06 15:44:30,731][vert.x-eventloop-thread-7:14682]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00005-003','cjlu-00016-001','cjlu-00011-003','cjlu-00022-001','cjlu-00006-001'),identification:9
+[2019-06-06 15:44:30,731][vert.x-eventloop-thread-7:14682]-[DEBUG]-mysql verticle recived QueryMessage,identification:8
+[2019-06-06 15:44:30,731][vert.x-eventloop-thread-7:14682]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,731][vert.x-eventloop-thread-7:14682]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,731][vert.x-eventloop-thread-7:14682]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,732][vert.x-eventloop-thread-7:14683]-[DEBUG]-mysql query done,identification:3
+[2019-06-06 15:44:30,732][vert.x-eventloop-thread-7:14683]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00013-001','cjlu-00006-002','cjlu-00020-002','cjlu-00019-001','cjlu-00016-003'),identification:10
+[2019-06-06 15:44:30,732][vert.x-eventloop-thread-7:14683]-[DEBUG]-mysql verticle recived UpdateMessage,identification:4
+[2019-06-06 15:44:30,732][vert.x-eventloop-thread-7:14683]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,732][vert.x-eventloop-thread-7:14683]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,732][vert.x-eventloop-thread-7:14683]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,734][vert.x-eventloop-thread-2:14685]-[DEBUG]-get student course done,identification:1
+[2019-06-06 15:44:30,735][vert.x-eventloop-thread-2:14686]-[DEBUG]-try updateRemain( cjlu-00025-003),identification:1
+[2019-06-06 15:44:30,735][vert.x-eventloop-thread-7:14686]-[DEBUG]-mysql verticle recived UpdateMessage,identification:1
+[2019-06-06 15:44:30,735][vert.x-eventloop-thread-7:14686]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,735][vert.x-eventloop-thread-7:14686]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,735][vert.x-eventloop-thread-7:14686]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,735][vert.x-eventloop-thread-7:14686]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,738][vert.x-eventloop-thread-7:14689]-[DEBUG]-mysql query done,identification:7
+[2019-06-06 15:44:30,738][vert.x-eventloop-thread-7:14689]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00021-001',identification:2
+[2019-06-06 15:44:30,740][vert.x-eventloop-thread-2:14691]-[DEBUG]-get student course done,identification:5
+[2019-06-06 15:44:30,741][vert.x-eventloop-thread-2:14692]-[DEBUG]-try updateRemain( cjlu-00009-001),identification:5
+[2019-06-06 15:44:30,742][vert.x-eventloop-thread-7:14693]-[DEBUG]-mysql verticle recived UpdateMessage,identification:5
+[2019-06-06 15:44:30,742][vert.x-eventloop-thread-7:14693]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,742][vert.x-eventloop-thread-7:14693]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,742][vert.x-eventloop-thread-7:14693]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,742][vert.x-eventloop-thread-7:14693]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,743][vert.x-eventloop-thread-2:14694]-[DEBUG]-get student course done,identification:3
+[2019-06-06 15:44:30,743][vert.x-eventloop-thread-2:14694]-[DEBUG]-try updateRemain( cjlu-00002-002),identification:3
+[2019-06-06 15:44:30,744][vert.x-eventloop-thread-7:14695]-[DEBUG]-mysql verticle recived UpdateMessage,identification:3
+[2019-06-06 15:44:30,744][vert.x-eventloop-thread-7:14695]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,744][vert.x-eventloop-thread-7:14695]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,744][vert.x-eventloop-thread-7:14695]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,744][vert.x-eventloop-thread-7:14695]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,744][vert.x-eventloop-thread-7:14695]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,745][vert.x-eventloop-thread-2:14696]-[DEBUG]-get student course done,identification:7
+[2019-06-06 15:44:30,746][vert.x-eventloop-thread-2:14697]-[DEBUG]-try updateRemain( cjlu-00004-003),identification:7
+[2019-06-06 15:44:30,746][vert.x-eventloop-thread-7:14697]-[DEBUG]-mysql verticle recived UpdateMessage,identification:7
+[2019-06-06 15:44:30,746][vert.x-eventloop-thread-7:14697]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,746][vert.x-eventloop-thread-7:14697]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,746][vert.x-eventloop-thread-7:14697]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,746][vert.x-eventloop-thread-7:14697]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,746][vert.x-eventloop-thread-7:14697]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,746][vert.x-eventloop-thread-7:14697]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,750][vert.x-eventloop-thread-7:14701]-[DEBUG]-mysql query done,identification:10
+[2019-06-06 15:44:30,751][vert.x-eventloop-thread-7:14702]-[DEBUG]-mysql query:select * from mcg_course_schedule where code in ('cjlu-00006-004','cjlu-00012-004','cjlu-00013-001','cjlu-00024-001','cjlu-00015-004'),identification:8
+[2019-06-06 15:44:30,758][vert.x-eventloop-thread-7:14709]-[DEBUG]-mysql query done,identification:9
+[2019-06-06 15:44:30,758][vert.x-eventloop-thread-7:14709]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00019-001',identification:4
+[2019-06-06 15:44:30,760][vert.x-eventloop-thread-7:14711]-[DEBUG]-mysql query done,identification:8
+[2019-06-06 15:44:30,760][vert.x-eventloop-thread-7:14711]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00025-003',identification:1
+[2019-06-06 15:44:30,765][vert.x-eventloop-thread-7:14716]-[DEBUG]-mysql update done,identification:2
+[2019-06-06 15:44:30,765][vert.x-eventloop-thread-7:14716]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00009-001',identification:5
+[2019-06-06 15:44:30,768][vert.x-eventloop-thread-7:14719]-[DEBUG]-mysql update done,identification:4
+[2019-06-06 15:44:30,768][vert.x-eventloop-thread-7:14719]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00002-002',identification:3
+[2019-06-06 15:44:30,768][vert.x-eventloop-thread-7:14719]-[DEBUG]-mysql update done,identification:1
+[2019-06-06 15:44:30,768][vert.x-eventloop-thread-7:14719]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00004-003',identification:7
+[2019-06-06 15:44:30,769][vert.x-eventloop-thread-7:14720]-[DEBUG]-mysql update done,identification:5
+[2019-06-06 15:44:30,773][vert.x-eventloop-thread-2:14724]-[DEBUG]-get student course done,identification:10
+[2019-06-06 15:44:30,774][vert.x-eventloop-thread-2:14725]-[DEBUG]-try updateRemain( cjlu-00015-003),identification:10
+[2019-06-06 15:44:30,775][vert.x-eventloop-thread-2:14726]-[DEBUG]-get student course done,identification:9
+[2019-06-06 15:44:30,776][vert.x-eventloop-thread-7:14727]-[DEBUG]-mysql update done,identification:3
+[2019-06-06 15:44:30,777][vert.x-eventloop-thread-2:14728]-[DEBUG]-try updateRemain( cjlu-00021-001),identification:9
+[2019-06-06 15:44:30,777][vert.x-eventloop-thread-7:14728]-[DEBUG]-mysql query done,identification:6
+[2019-06-06 15:44:30,777][vert.x-eventloop-thread-7:14728]-[DEBUG]-mysql update done,identification:7
+[2019-06-06 15:44:30,777][vert.x-eventloop-thread-7:14728]-[DEBUG]-mysql verticle recived UpdateMessage,identification:10
+[2019-06-06 15:44:30,778][vert.x-eventloop-thread-7:14729]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00015-003',identification:10
+[2019-06-06 15:44:30,778][vert.x-eventloop-thread-7:14729]-[DEBUG]-mysql verticle recived UpdateMessage,identification:9
+[2019-06-06 15:44:30,778][vert.x-eventloop-thread-7:14729]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00021-001',identification:9
+[2019-06-06 15:44:30,779][vert.x-eventloop-thread-2:14730]-[DEBUG]-get student course done,identification:8
+[2019-06-06 15:44:30,779][vert.x-eventloop-thread-2:14730]-[DEBUG]-try updateRemain( cjlu-00016-002),identification:8
+[2019-06-06 15:44:30,780][vert.x-eventloop-thread-7:14731]-[DEBUG]-mysql verticle recived UpdateMessage,identification:8
+[2019-06-06 15:44:30,780][vert.x-eventloop-thread-2:14731]-[DEBUG]-updateRemain done,identification:2
+[2019-06-06 15:44:30,780][vert.x-eventloop-thread-7:14731]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00016-002',identification:8
+[2019-06-06 15:44:30,781][vert.x-eventloop-thread-2:14732]-[DEBUG]-try addElectiveCourse,identification:2
+[2019-06-06 15:44:30,781][vert.x-eventloop-thread-7:14732]-[DEBUG]-mysql update done,identification:10
+[2019-06-06 15:44:30,782][vert.x-eventloop-thread-7:14733]-[DEBUG]-mysql verticle recived UpdateMessage,identification:2
+[2019-06-06 15:44:30,782][vert.x-eventloop-thread-2:14733]-[DEBUG]-updateRemain done,identification:4
+[2019-06-06 15:44:30,782][vert.x-eventloop-thread-7:14733]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100001','cjlu-00021-001'),identification:2
+[2019-06-06 15:44:30,782][vert.x-eventloop-thread-2:14733]-[DEBUG]-try addElectiveCourse,identification:4
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-7:14734]-[DEBUG]-mysql verticle recived UpdateMessage,identification:4
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-2:14734]-[DEBUG]-updateRemain done,identification:1
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-7:14734]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100002','cjlu-00019-001'),identification:4
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-2:14734]-[DEBUG]-try addElectiveCourse,identification:1
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-7:14734]-[DEBUG]-mysql verticle recived UpdateMessage,identification:1
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-2:14734]-[DEBUG]-updateRemain done,identification:5
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-2:14734]-[DEBUG]-try addElectiveCourse,identification:5
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-2:14734]-[DEBUG]-updateRemain done,identification:3
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-2:14734]-[DEBUG]-try addElectiveCourse,identification:3
+[2019-06-06 15:44:30,783][vert.x-eventloop-thread-7:14734]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,784][vert.x-eventloop-thread-7:14735]-[DEBUG]-mysql verticle recived UpdateMessage,identification:5
+[2019-06-06 15:44:30,784][vert.x-eventloop-thread-7:14735]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,784][vert.x-eventloop-thread-7:14735]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,784][vert.x-eventloop-thread-7:14735]-[DEBUG]-mysql verticle recived UpdateMessage,identification:3
+[2019-06-06 15:44:30,784][vert.x-eventloop-thread-7:14735]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,784][vert.x-eventloop-thread-7:14735]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,784][vert.x-eventloop-thread-7:14735]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,785][vert.x-eventloop-thread-2:14736]-[DEBUG]-get student course done,identification:6
+[2019-06-06 15:44:30,785][vert.x-eventloop-thread-2:14736]-[DEBUG]-try updateRemain( cjlu-00022-003),identification:6
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[DEBUG]-mysql verticle recived UpdateMessage,identification:6
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-2:14737]-[DEBUG]-updateRemain done,identification:7
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-2:14737]-[DEBUG]-try addElectiveCourse,identification:7
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[DEBUG]-mysql verticle recived UpdateMessage,identification:7
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,786][vert.x-eventloop-thread-7:14737]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,787][vert.x-eventloop-thread-2:14738]-[DEBUG]-updateRemain done,identification:10
+[2019-06-06 15:44:30,788][vert.x-eventloop-thread-2:14739]-[DEBUG]-try addElectiveCourse,identification:10
+[2019-06-06 15:44:30,788][vert.x-eventloop-thread-7:14739]-[DEBUG]-mysql verticle recived UpdateMessage,identification:10
+[2019-06-06 15:44:30,788][vert.x-eventloop-thread-7:14739]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,788][vert.x-eventloop-thread-7:14739]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,788][vert.x-eventloop-thread-7:14739]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,788][vert.x-eventloop-thread-7:14739]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,788][vert.x-eventloop-thread-7:14739]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,788][vert.x-eventloop-thread-7:14739]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,791][vert.x-eventloop-thread-7:14742]-[DEBUG]-mysql update done,identification:8
+[2019-06-06 15:44:30,791][vert.x-eventloop-thread-7:14742]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100003','cjlu-00025-003'),identification:1
+[2019-06-06 15:44:30,791][vert.x-eventloop-thread-2:14742]-[DEBUG]-updateRemain done,identification:8
+[2019-06-06 15:44:30,791][vert.x-eventloop-thread-2:14742]-[DEBUG]-try addElectiveCourse,identification:8
+[2019-06-06 15:44:30,791][vert.x-eventloop-thread-7:14742]-[DEBUG]-mysql verticle recived UpdateMessage,identification:8
+[2019-06-06 15:44:30,792][vert.x-eventloop-thread-7:14743]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,792][vert.x-eventloop-thread-7:14743]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,792][vert.x-eventloop-thread-7:14743]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,792][vert.x-eventloop-thread-7:14743]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,792][vert.x-eventloop-thread-7:14743]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,792][vert.x-eventloop-thread-7:14743]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,800][vert.x-eventloop-thread-7:14751]-[DEBUG]-mysql update done,identification:2
+[2019-06-06 15:44:30,800][vert.x-eventloop-thread-7:14751]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100004','cjlu-00009-001'),identification:5
+[2019-06-06 15:44:30,800][vert.x-eventloop-thread-7:14751]-[DEBUG]-mysql update done,identification:4
+[2019-06-06 15:44:30,800][vert.x-eventloop-thread-2:14751]-[DEBUG]-add elective course done,identification:2
+[2019-06-06 15:44:30,801][vert.x-eventloop-thread-7:14752]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100005','cjlu-00002-002'),identification:3
+[2019-06-06 15:44:30,801][vert.x-eventloop-thread-2:14752]-[INFO]-select course operator done!identification:2,success:8,current time:1559807070801
+[2019-06-06 15:44:30,801][vert.x-eventloop-thread-7:14752]-[DEBUG]-mysql update done,identification:9
+[2019-06-06 15:44:30,803][vert.x-eventloop-thread-7:14754]-[DEBUG]-mysql update:update mcg_course_remain set number = number + 1 where code = 'cjlu-00022-003',identification:6
+[2019-06-06 15:44:30,803][vert.x-eventloop-thread-7:14754]-[DEBUG]-mysql update done,identification:1
+[2019-06-06 15:44:30,803][vert.x-eventloop-thread-2:14754]-[DEBUG]-add elective course done,identification:4
+[2019-06-06 15:44:30,803][vert.x-eventloop-thread-2:14754]-[INFO]-select course operator done!identification:4,success:8,current time:1559807070803
+[2019-06-06 15:44:30,803][vert.x-eventloop-thread-7:14754]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100006','cjlu-00004-003'),identification:7
+[2019-06-06 15:44:30,804][vert.x-eventloop-thread-2:14755]-[DEBUG]-updateRemain done,identification:9
+[2019-06-06 15:44:30,804][vert.x-eventloop-thread-2:14755]-[DEBUG]-try addElectiveCourse,identification:9
+[2019-06-06 15:44:30,804][vert.x-eventloop-thread-7:14755]-[DEBUG]-mysql verticle recived UpdateMessage,identification:9
+[2019-06-06 15:44:30,804][vert.x-eventloop-thread-7:14755]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,804][vert.x-eventloop-thread-7:14755]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,804][vert.x-eventloop-thread-7:14755]-[INFO]-wait for idle connections,hash:mcg-database-selector-seat0
+[2019-06-06 15:44:30,805][vert.x-eventloop-thread-2:14756]-[DEBUG]-add elective course done,identification:1
+[2019-06-06 15:44:30,805][vert.x-eventloop-thread-2:14756]-[INFO]-select course operator done!identification:1,success:9,current time:1559807070805
+[2019-06-06 15:44:30,805][vert.x-eventloop-thread-7:14756]-[DEBUG]-mysql update done,identification:5
+[2019-06-06 15:44:30,806][vert.x-eventloop-thread-7:14757]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100007','cjlu-00015-003'),identification:10
+[2019-06-06 15:44:30,806][vert.x-eventloop-thread-2:14757]-[DEBUG]-add elective course done,identification:5
+[2019-06-06 15:44:30,806][vert.x-eventloop-thread-2:14757]-[INFO]-select course operator done!identification:5,success:9,current time:1559807070806
+[2019-06-06 15:44:30,807][vert.x-eventloop-thread-7:14758]-[DEBUG]-mysql update done,identification:3
+[2019-06-06 15:44:30,807][vert.x-eventloop-thread-7:14758]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100008','cjlu-00016-002'),identification:8
+[2019-06-06 15:44:30,807][vert.x-eventloop-thread-7:14758]-[DEBUG]-mysql update done,identification:7
+[2019-06-06 15:44:30,808][vert.x-eventloop-thread-7:14759]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('100009','cjlu-00021-001'),identification:9
+[2019-06-06 15:44:30,808][vert.x-eventloop-thread-2:14759]-[DEBUG]-add elective course done,identification:3
+[2019-06-06 15:44:30,808][vert.x-eventloop-thread-2:14759]-[INFO]-select course operator done!identification:3,success:9,current time:1559807070808
+[2019-06-06 15:44:30,808][vert.x-eventloop-thread-7:14759]-[DEBUG]-mysql update done,identification:10
+[2019-06-06 15:44:30,808][vert.x-eventloop-thread-2:14759]-[DEBUG]-add elective course done,identification:7
+[2019-06-06 15:44:30,808][vert.x-eventloop-thread-2:14759]-[INFO]-select course operator done!identification:7,success:9,current time:1559807070808
+[2019-06-06 15:44:30,808][vert.x-eventloop-thread-7:14759]-[DEBUG]-mysql update done,identification:6
+[2019-06-06 15:44:30,809][vert.x-eventloop-thread-2:14760]-[DEBUG]-add elective course done,identification:10
+[2019-06-06 15:44:30,809][vert.x-eventloop-thread-2:14760]-[INFO]-select course operator done!identification:10,success:9,current time:1559807070809
+[2019-06-06 15:44:30,809][vert.x-eventloop-thread-2:14760]-[DEBUG]-updateRemain done,identification:6
+[2019-06-06 15:44:30,809][vert.x-eventloop-thread-2:14760]-[DEBUG]-try addElectiveCourse,identification:6
+[2019-06-06 15:44:30,809][vert.x-eventloop-thread-7:14760]-[DEBUG]-mysql verticle recived UpdateMessage,identification:6
+[2019-06-06 15:44:30,809][vert.x-eventloop-thread-7:14760]-[DEBUG]-mysql update:insert into mcg_student_course (student,code) values ('1000010','cjlu-00022-003'),identification:6
+[2019-06-06 15:44:30,811][vert.x-eventloop-thread-7:14762]-[DEBUG]-mysql update done,identification:8
+[2019-06-06 15:44:30,811][vert.x-eventloop-thread-2:14762]-[DEBUG]-add elective course done,identification:8
+[2019-06-06 15:44:30,811][vert.x-eventloop-thread-2:14762]-[INFO]-select course operator done!identification:8,success:10,current time:1559807070811
+[2019-06-06 15:44:30,811][vert.x-eventloop-thread-7:14762]-[DEBUG]-mysql update done,identification:9
+[2019-06-06 15:44:30,812][vert.x-eventloop-thread-2:14763]-[DEBUG]-add elective course done,identification:9
+[2019-06-06 15:44:30,812][vert.x-eventloop-thread-2:14763]-[INFO]-select course operator done!identification:9,success:10,current time:1559807070812
+[2019-06-06 15:44:30,812][vert.x-eventloop-thread-7:14763]-[DEBUG]-mysql update done,identification:6
+[2019-06-06 15:44:30,812][vert.x-eventloop-thread-2:14763]-[DEBUG]-add elective course done,identification:6
+[2019-06-06 15:44:30,812][vert.x-eventloop-thread-2:14763]-[INFO]-select course operator done!identification:6,success:10,current time:1559807070812

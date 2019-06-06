@@ -3,6 +3,7 @@ package cn.pgyyd.mcg.module;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 
 import cn.pgyyd.mcg.ds.CourseSchedule;
@@ -157,11 +158,12 @@ public class MysqlProxy {
         }
         if(course_ids.size() == 0 ) {
             reply.handle(new Failed<HashMap<String,CourseSchedule>>());
+            return;
         }
         HashMap<String,CourseSchedule> infos = new HashMap<String,CourseSchedule>();
         String ids = new String("(");
         for(String course_id : course_ids) {
-            ids += course_id;
+            ids += "'" + course_id +"'";
             ids += ",";
         }
         ids = ids.substring(0, ids.length()-1);
@@ -174,10 +176,11 @@ public class MysqlProxy {
                 ResultSet result = res.result();
                 //会存在多行结果
                 for(JsonObject obj : result.getRows()) {
-                    final String code = obj.getString(result.getColumnNames().get(1));
-                    final int week = obj.getInteger(result.getColumnNames().get(2));
-                    final int day = obj.getInteger(result.getColumnNames().get(3));
-                    int[] lesssons  = stringConvertInt(obj.getString(result.getColumnNames().get(4)));
+                    List<String> columns =  result.getColumnNames();
+                    final String code = obj.getString(columns.get(1));
+                    final int week = obj.getInteger(columns.get(2));
+                    final int day = obj.getInteger(columns.get(3));
+                    int[] lesssons  = stringConvertInt(obj.getString(columns.get(4)));
                     CourseSchedule course = new CourseSchedule(code);
                     if(!infos.containsKey(code)) {
                         infos.put(code, course);
@@ -239,7 +242,7 @@ public class MysqlProxy {
             log.debug("try getStudentCourses,identification:" + identification);
         }
         StudentSchedule infos = new StudentSchedule(student_id);
-        String sql = "select code from mcg_student_course where student = " + student_id;
+        String sql = "select code from mcg_student_course where student = " + "'" + student_id + "'";
         String hash1 = selector.hash_from_student_id(student_id);
         query(sql, hash1, identification, res->{
             if( res != null && res.succeeded() ) {
@@ -280,17 +283,17 @@ public class MysqlProxy {
      */
     public void updateRemain(String course_id, int num, long identification,Handler<AsyncResult<Boolean>> reply) {
         if(identification != -1) {
-            log.debug("try updateRemain,identification:" + identification);
+            log.debug("try updateRemain( " + course_id + "),identification:" + identification);
         }
         String sql = new String();
         if(num < 0) {
             num = -num;
             sql = "update mcg_course_remain set number = number - " + num
-                                + " where code = " + course_id +
-                                  " and number > 0";
+                                + " where code = '" + course_id +
+                                  "' and number > 0";
         }else {
             sql = "update mcg_course_remain set number = number + " + num
-                    + " where code = " + course_id ;
+                    + " where code = '" + course_id +"'";
         }
         String hash = selector.hash_from_course_code(course_id);
         update(sql, hash, identification, res->{
@@ -327,8 +330,8 @@ public class MysqlProxy {
                 + "code)"
                 +  " values "
                 +                "(" 
-                +   student_id +  "," 
-                +   course_id +  ")";
+                + "'" + student_id + "'" + "," 
+                + "'" + course_id +  "'" + ")";
         String hash = selector.hash_from_student_id(student_id);
         update(sql, hash, identification, res->{
             if(identification != -1) {
@@ -420,6 +423,7 @@ public class MysqlProxy {
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name());
         MysqlMessage.UpdateMessage message = new MysqlMessage.UpdateMessage(op,identification);
+        message.set_hash(hash);
         vertx.eventBus().send(UPDATE,message,options,handler);
     }
     /**不直接提供事务接口，而以具体的业务接口的形式给出
