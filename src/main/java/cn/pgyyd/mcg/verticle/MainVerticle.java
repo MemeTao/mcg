@@ -19,7 +19,7 @@ public class MainVerticle extends AbstractVerticle {
         HttpServer httpServer = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
-        addLoginHandler(router);
+        //addLoginHandler(router);
         addMainPageHandler(router);
         addStaticResourceHandler(router);
         addCourseInfoHandler(router);
