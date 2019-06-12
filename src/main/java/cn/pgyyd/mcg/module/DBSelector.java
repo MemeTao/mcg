@@ -53,12 +53,14 @@ public class DBSelector {
     private int get_key_from_student_id(String student_id) {
         //1400304211   003代表学院id?
         //FIXME:应该没有000吧
+        int key = 0;
         try {
             student_id = student_id.substring(2,5);
+            key = Integer.parseInt(student_id);
         }catch (IndexOutOfBoundsException e) {
             log.error("student id :"+student_id + " is illegal!");
         }
-        return 0;
+        return key;
     }
     
     public String hash_from_student_id(final String student) {
@@ -102,7 +104,6 @@ public class DBSelector {
     }
     
     private void bind_hash_and_mysql(JsonObject configs){
-        log.info("bind hash and mysql...");
         for(Entry<Long,String> it : indexs.entrySet()) {
             JsonObject config = null;
             if(it.getKey() == 0) {
