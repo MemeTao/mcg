@@ -3,7 +3,7 @@ HEAD|SUMMARY
 -----|--------
 Author:| Numbaa, 
 Status:| Draft
-Date:| 14-April-2019
+Date:| 15-June-2019
 
 ### 1.登录接口
 #### 接口说明
@@ -18,7 +18,10 @@ Date:| 14-April-2019
 |uid |ture |int|学生学号 |
 |token |true |string |学生从学校取到的token|
 #### 返回结果
-> 返回302，重定向至选课主页
+|返回字段|字段类型|说明 |
+|:----- |:------|:----------------------------- |
+|status_code | int |返回结果状态。0：登录成功；1：登录失败 |
+|msg| int | 登录失败原因 |
  
 ---
 ### 2.课程信息接口
@@ -42,7 +45,9 @@ Date:| 14-April-2019
 |data.name|string|课程名称|
 |data.summary|string|课程简介|
 |data.teacher|string|任课老师|
-|data.period|object|上课时间(格式待定)|
+|data.credi|int|学分|
+|data.capacity|int|课程容量|
+|data.period|string|上课时间(用string格式是临时的，只是为了展示在前端页面)|
 
 
 ---
@@ -50,6 +55,18 @@ Date:| 14-April-2019
 #### 请求方式
 > POST
 #### 请求参数
+|参数|必选|类型|说明|
+|:----- |:-------|:-----|----- |
+|courseids|ture |string|课程id，如10001,10002,10003 |
+#### 返回结果
+|返回字段|字段类型|说明 |
+|:----- |:------|:----------------------------- |
+|status_code | int |返回结果状态。0：成功；1：失败|
+|msg| string | 请求失败原因 |
+|data|array|课程剩余人数|
+|data.courseid|int|课程id|
+|data.remain|int|剩余人数|
+
 
 ---
 ### 4.选课请求接口
@@ -68,7 +85,7 @@ Date:| 14-April-2019
 |返回字段|字段类型|说明 |
 |:----- |:------|:----------------------------- |
 |status_code | int |返回结果状态。0：选课成功；1：选课失败；3：选课排队中 |
-|jobid| int | 排队id |
+|jobid| string | 排队id |
 
 ---
 ### 5.查询选课结果接口
@@ -76,3 +93,15 @@ Date:| 14-April-2019
 > www.example.com/check
 #### 请求方式
 > POST
+#### 请求参数
+|参数|必选|类型|说明|
+|:----- |:-------|:-----|----- |
+|jobid |ture |string|选课排队id |
+#### 返回结果
+|返回字段|字段类型|说明 |
+|:----- |:------|:----------------------------- |
+|status_code | int |返回结果状态。0：成功；1：失败 |
+|msg| string | 失败原因 |
+|results|array|选课结果|
+|results.course|int|课程id|
+|results.success|bool|选课成功与否|
