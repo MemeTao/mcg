@@ -90,6 +90,7 @@ public class MySqlVerticle extends AbstractVerticle {
                 busy_connections.put(hash, new LinkedList<SQLConnection>());
                 
                 clients.put(hash, client);
+                log.info("initialize mysql connections use mysql configurate:" + item.getValue().toString());
                 for(int i = 0 ;i < connection_num; i++) {
                     client.getConnection(res -> {
                         if (res.succeeded()) {
@@ -101,7 +102,7 @@ public class MySqlVerticle extends AbstractVerticle {
                         }
                       });
                 }
-                log.info("initialize mysql connections use mysql configurate:" + item.getValue().toString());
+                //TODO:如果所有的连接都建立不起来，需要结束程序
             }
         }
         tasks = new TreeMap<Long,TaskOp>();
@@ -169,7 +170,11 @@ public class MySqlVerticle extends AbstractVerticle {
         for(Entry<Long,TaskOp> task : tasks.entrySet()) {
             String hash = task.getValue().hash;
             LinkedList<SQLConnection> conns = idle_connections.get(hash);
-            if(conns == null || conns.size() == 0) {  //对 == null 不处理
+            if(conns == null) {
+                log.error("invlid hash:" + hash);
+                continue;
+            }
+            if(conns.size() == 0) {  //对 == null 不处理
                 log.info("wait for idle connections,hash:" + hash);
                 continue;
             }
@@ -219,7 +224,7 @@ public class MySqlVerticle extends AbstractVerticle {
         }
         conn.execute(op, res->{
             if(mess.indentification != -1) {
-                log.debug("mysql execute done" + ",identification:" + mess.indentification);
+                log.debug("mysql execute done(" + res.succeeded()  + "),identification:" + mess.indentification);
             }
             ExecuteMessage result = new ExecuteMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name()));
@@ -234,7 +239,7 @@ public class MySqlVerticle extends AbstractVerticle {
         }
         conn.query(op, res->{
             if(mess.indentification != -1) {
-                log.debug("mysql query done" + ",identification:" + mess.indentification);
+                log.debug("mysql query donedone(" + res.succeeded() +"),identification:" + mess.indentification);
             }
             QueryMessage result = new QueryMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name()));
@@ -249,7 +254,7 @@ public class MySqlVerticle extends AbstractVerticle {
         }
         conn.update(op, res->{
             if(mess.indentification != -1) {
-                log.debug("mysql update done" + ",identification:" + mess.indentification);
+                log.debug("mysql update done (" + res.succeeded() + "),identification:" + mess.indentification);
             }
             UpdateMessage result = new UpdateMessage(res);
             message.reply(result,new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name()));

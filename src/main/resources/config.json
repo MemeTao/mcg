@@ -3,7 +3,19 @@
     "threads": 4,
     "db_number":1,
     "m0":{
+        "host":"127.0.0.1",
+        "port":3306,
+        "user":"memetao",
+        "passwd":"123456",
+        "connections":8,
+        "name":"mcg_m0"
     },
     "s1":{
+        "host":"127.0.0.1",
+        "port":3306,
+        "user":"memetao",
+        "passwd":"123456",
+        "connections":8,
+        "name":"mcg_s1"
     }
 }

@@ -157,6 +157,7 @@ public class MysqlProxy {
             log.debug("try getCourseSchedule,identification:" + identification);
         }
         if(course_ids.size() == 0 ) {
+            log.error("course_ids is empty");
             reply.handle(new Failed<HashMap<String,CourseSchedule>>());
             return;
         }
@@ -191,6 +192,7 @@ public class MysqlProxy {
                 reply.handle(new Success<HashMap<String, CourseSchedule>>(infos));
             }
             else{
+                log.error( sql + "  failed");
                 reply.handle(new Failed<HashMap<String, CourseSchedule>>());
             }
         });
@@ -266,6 +268,9 @@ public class MysqlProxy {
                         reply.handle(new Failed<StudentSchedule>());
                     }
                 });
+           }else {
+               log.error( sql + "  failed");
+               reply.handle(new Failed<StudentSchedule>());
            }
         });
     }

@@ -90,9 +90,8 @@ public class DBSelector {
     }
     
     private void allocate_hashkeys(int db_num) {
-        log.info("allocating hash keys...");
         if(db_num == 0) {
-            log.error("db number is must greater than zero!");
+            log.error("db_number must be greater than zero!");
             System.exit(-1);
         }
         String hash0 = "mcg-" + "database-selector-seat";
@@ -135,7 +134,7 @@ public class DBSelector {
                 put("username",config.getString("user","memetao")).
                 put("password",config.getString("passwd","123456")).
                 put("maxPoolSize",config.getInteger("connections",4)).
-                put("database",config.getString("name","mcg")).
+                put("database",config.getString("name","mcg_m0")).
                 put("queryTimeout",1000);
         return mysql;
     }
