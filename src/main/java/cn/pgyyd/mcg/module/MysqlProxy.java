@@ -171,7 +171,7 @@ public class MysqlProxy {
         ids += ")";
         
         String sql = "select * from mcg_course_schedule where code in " + ids;
-        String hash = selector.main_db_hash();
+        String hash = selector.hash_from_course_code(course_ids.get(0));
         query(sql,hash,identification,res-> {
             if( res != null && res.succeeded()) {
                 ResultSet result = res.result();
@@ -192,7 +192,7 @@ public class MysqlProxy {
                 reply.handle(new Success<HashMap<String, CourseSchedule>>(infos));
             }
             else{
-                log.error( sql + "  failed");
+                log.error( sql + "  failed,identification:" + identification);
                 reply.handle(new Failed<HashMap<String, CourseSchedule>>());
             }
         });
@@ -363,7 +363,8 @@ public class MysqlProxy {
             AsyncResult<Void> result = res.result().body().result();
             reply.handle(result);
         };
-        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name());
+        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name())
+                .setSendTimeout(60*1000);
         MysqlMessage.ExecuteMessage message = new MysqlMessage.ExecuteMessage(op);
         message.set_hash(hash);
         vertx.eventBus().send(EXEC,message,options,handler);
@@ -374,7 +375,8 @@ public class MysqlProxy {
             AsyncResult<Void> result = res.result().body().result();
             reply.handle(result);
         };
-        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name());
+        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlExecute().name())
+                .setSendTimeout(60*1000);
         MysqlMessage.ExecuteMessage message = new MysqlMessage.ExecuteMessage(op,identification);
         message.set_hash(hash);
         vertx.eventBus().send(EXEC,message,options,handler);
@@ -389,7 +391,8 @@ public class MysqlProxy {
                 reply.handle(new Failed<ResultSet>());
             }
         };
-        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name());
+        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name())
+                .setSendTimeout(60*1000);
         MysqlMessage.QueryMessage message = new MysqlMessage.QueryMessage(op);
         message.set_hash(hash);
         vertx.eventBus().send(QUERY,message,options,handler);
@@ -401,10 +404,12 @@ public class MysqlProxy {
                 AsyncResult<ResultSet> result = res.result().body().result();
                 reply.handle(result);
             }else {
+                log.error("op failed,error:" + res.cause().toString());
                 reply.handle(new Failed<ResultSet>());
             }
         };
-        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name());
+        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlQuery().name())
+                .setSendTimeout(60*1000);
         MysqlMessage.QueryMessage message = new MysqlMessage.QueryMessage(op,identification);
         message.set_hash(hash);
         vertx.eventBus().send(QUERY,message,options,handler);
@@ -416,10 +421,12 @@ public class MysqlProxy {
                 AsyncResult<UpdateResult> result = res.result().body().result();
                 reply.handle(result);
             }else {
+                log.error("op failed,error:" + res.cause().toString());
                 reply.handle(new Failed<UpdateResult>());
             }
         };
-        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name());
+        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name())
+                .setSendTimeout(60*1000);
         MysqlMessage.UpdateMessage message = new MysqlMessage.UpdateMessage(op);
         message.set_hash(hash);
         vertx.eventBus().send(UPDATE,message,options,handler);
@@ -434,7 +441,8 @@ public class MysqlProxy {
                 reply.handle(new Failed<UpdateResult>());
             }
         };
-        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name());
+        DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name())
+                .setSendTimeout(60*1000);
         MysqlMessage.UpdateMessage message = new MysqlMessage.UpdateMessage(op,identification);
         message.set_hash(hash);
         vertx.eventBus().send(UPDATE,message,options,handler);

@@ -92,7 +92,7 @@ public class MySqlVerticle extends AbstractVerticle {
                 busy_connections.put(hash, new LinkedList<SQLConnection>());
                 clients.put(hash, client);
                 log.debug("clients:" + clients.size());
-                for(int i = 0 ;i < connection_num / 2; i++) {
+                for(int i = 0 ;i < connection_num; i++) {
                     log.debug("try get connections");
                     client.getConnection(res -> {
                         if (res.succeeded()) {
@@ -169,7 +169,16 @@ public class MySqlVerticle extends AbstractVerticle {
          * 3.没有某库的空闲连接....
          * 
          * 所以是以是否有sql请求为导向
+         * 但是，通常情况下，连接都是处于不可用状态
          */
+        int idle_conns = 0;
+        for(Entry<String,LinkedList<SQLConnection>> conns : idle_connections.entrySet()) {
+                idle_conns += conns.getValue().size();
+        }
+        if(idle_conns == 0) {
+            log.info("no idle connections exists,waiting");
+            return;
+        }
         ArrayList<Long> keys_delete = new ArrayList<Long>();
         for(Entry<Long,TaskOp> task : tasks.entrySet()) {
             String hash = task.getValue().hash;
@@ -185,6 +194,7 @@ public class MySqlVerticle extends AbstractVerticle {
             }
             SQLConnection conn = conns.get(0);
             idle_connections.get(hash).remove(conn);
+            idle_conns --;
             busy_connections.get(hash).add(conn);
             keys_delete.add(task.getKey());
             final String op = task.getValue().op;
@@ -201,11 +211,13 @@ public class MySqlVerticle extends AbstractVerticle {
                 default:
                     break;
             }
+            if(idle_conns == 0) {
+                break;
+            }
         }
         for(int i = 0 ; i< keys_delete.size(); i++) {
             tasks.remove(keys_delete.get(i));
         }
-        keys_delete.clear();
          //事务操作
 //            if(tasks_transaction.size() > 0) {
 //                Entry<Long,MySqlVerticle.TaskTransaction> next = null;

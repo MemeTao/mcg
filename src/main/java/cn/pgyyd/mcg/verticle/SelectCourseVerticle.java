@@ -84,9 +84,6 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                if(res.failed()) {
                    log.error("select course failed,student_id:" + student_id + ",courses_wanted:" + courses_wanted);
                }
-               log.info("select course operator done!identification:" + task.sequence + 
-                       ",success:" + num_success + 
-                       ",current time:" + System.currentTimeMillis());
                handler.handle(successed_courses);
             });
             //1.根据提交的课程id列表去获取这些课程的时间信息,成功后调用f_get_courses_schedule.completer()
@@ -125,11 +122,13 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                     //+1
                     mysqlProxy.updateRemain(course_id,1,task.sequence,res->{
                         if(res.succeeded()) {
-                            num_success ++;
                             //String global = "" + 10000 + temp_id.addAndGet(1);
                             mysqlProxy.addElectiveCourse(student_id,course_id,task.sequence,res_add->{
                                 if(res_add.succeeded()) {
+                                    num_success ++;
                                     successed_courses.add(course_id);  //直到这里才算成功
+                                    log.info("select course operator done!" + 
+                                            "success:" + num_success + ",identification:" + task.sequence);
                                 }else {
 //                                    mysqlProxy.updateRemain(course_id, 1,res_dec->{
 //                                        //不可能失败，除非数据库死了
@@ -190,7 +189,6 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
         }
         Long key = jobs.firstKey();
         Task t = jobs.get(key);
-        log.info("current task queue size:" + jobs.size() + ",schedule...identification:" + t.sequence);
         jobs.remove(key);       //立即删除
         doSelectCourse(t,res->{
             /*FIXME:选课结果可能是部分成功，在redis中需要另外一个地方来记录已成功课程s*/
