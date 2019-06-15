@@ -1,5 +1,6 @@
 package cn.pgyyd.mcg.verticle;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -84,18 +85,20 @@ public class MySqlVerticle extends AbstractVerticle {
             busy_connections = new TreeMap<String/*hash*/,LinkedList<SQLConnection>>();
             for(Entry<String,JsonObject> item : hash_and_config.entrySet()) {
                 String hash = item.getKey();
+                log.info("initialize mysql connections use mysql configurate(:" +hash +")" + item.getValue().toString());
                 int connection_num = item.getValue().getInteger("maxPoolSize");
-                AsyncSQLClient client = MySQLClient.createShared(vertx, item.getValue());
+                AsyncSQLClient client = MySQLClient.createNonShared(vertx, item.getValue());
                 idle_connections.put(hash, new LinkedList<SQLConnection>());
                 busy_connections.put(hash, new LinkedList<SQLConnection>());
-                
                 clients.put(hash, client);
-                log.info("initialize mysql connections use mysql configurate:" + item.getValue().toString());
-                for(int i = 0 ;i < connection_num; i++) {
+                log.debug("clients:" + clients.size());
+                for(int i = 0 ;i < connection_num / 2; i++) {
+                    log.debug("try get connections");
                     client.getConnection(res -> {
                         if (res.succeeded()) {
                             SQLConnection conn = res.result();
                             idle_connections.get(hash).add(conn);
+                            log.debug("hash:" + hash + ",connected:" + idle_connections.get(hash).size());
                         }
                         else {
                             log.warn("get mysql connection fail,hash:" + hash);
@@ -167,13 +170,15 @@ public class MySqlVerticle extends AbstractVerticle {
          * 
          * 所以是以是否有sql请求为导向
          */
+        ArrayList<Long> keys_delete = new ArrayList<Long>();
         for(Entry<Long,TaskOp> task : tasks.entrySet()) {
             String hash = task.getValue().hash;
-            LinkedList<SQLConnection> conns = idle_connections.get(hash);
-            if(conns == null) {
-                log.error("invlid hash:" + hash);
+            if(hash == null || !idle_connections.containsKey(hash)) {
+                log.error("no exist connections corresponding to hash:," + hash);
+                keys_delete.add(task.getKey());
                 continue;
             }
+            LinkedList<SQLConnection> conns = idle_connections.get(hash);
             if(conns.size() == 0) {  //对 == null 不处理
                 log.info("wait for idle connections,hash:" + hash);
                 continue;
@@ -181,7 +186,7 @@ public class MySqlVerticle extends AbstractVerticle {
             SQLConnection conn = conns.get(0);
             idle_connections.get(hash).remove(conn);
             busy_connections.get(hash).add(conn);
-            tasks.remove(task.getKey()); //为了防止某操作一直未执行成功，又被其它连接执行，需要立马删除
+            keys_delete.add(task.getKey());
             final String op = task.getValue().op;
             switch(op) {
                 case EXEC:
@@ -197,6 +202,10 @@ public class MySqlVerticle extends AbstractVerticle {
                     break;
             }
         }
+        for(int i = 0 ; i< keys_delete.size(); i++) {
+            tasks.remove(keys_delete.get(i));
+        }
+        keys_delete.clear();
          //事务操作
 //            if(tasks_transaction.size() > 0) {
 //                Entry<Long,MySqlVerticle.TaskTransaction> next = null;

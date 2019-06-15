@@ -126,8 +126,8 @@ public class SelectCourseVerticle<getCourseSchedule>  extends AbstractVerticle {
                     mysqlProxy.updateRemain(course_id,1,task.sequence,res->{
                         if(res.succeeded()) {
                             num_success ++;
-                            String global = "" + 10000 + temp_id.addAndGet(1);
-                            mysqlProxy.addElectiveCourse(global,course_id,task.sequence,res_add->{
+                            //String global = "" + 10000 + temp_id.addAndGet(1);
+                            mysqlProxy.addElectiveCourse(student_id,course_id,task.sequence,res_add->{
                                 if(res_add.succeeded()) {
                                     successed_courses.add(course_id);  //直到这里才算成功
                                 }else {

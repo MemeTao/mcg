@@ -65,17 +65,19 @@ public class DBSelector {
     
     public String hash_from_student_id(final String student) {
         int key = get_key_from_student_id(student);
-        long index = key % hash_ring_length;
+        long index = (key-1) % hash_ring_length;
         String hash =  indexs.get(index);
+        log.debug("key:" + student + ",hash:" + hash);
         return hash;
     }
     
     public String hash_from_course_code(final String code) {
         //按照计划，每个课程id的后3位是学院id
         //cjlu-00002-001
-        int key  =  Integer.parseInt(code.substring(code.length() - 3, code.length() - 1));
-        long index = key % hash_ring_length;
+        int key  =  Integer.parseInt(code.substring(code.length() - 3, code.length()));
+        long index = (key-1) % hash_ring_length;
         String hash = indexs.get(index);
+        log.debug("key:" + code + ",hash:" + hash);
         return hash;
     }
     

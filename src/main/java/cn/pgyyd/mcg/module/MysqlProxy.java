@@ -157,7 +157,7 @@ public class MysqlProxy {
             log.debug("try getCourseSchedule,identification:" + identification);
         }
         if(course_ids.size() == 0 ) {
-            log.error("course_ids is empty");
+            log.error("course_ids is empty,return false!");
             reply.handle(new Failed<HashMap<String,CourseSchedule>>());
             return;
         }
@@ -256,7 +256,7 @@ public class MysqlProxy {
                 }
                 getCourseSchedule(course_ids,identification, course_res->{
                     if(identification != -1) {
-                        log.debug("get student course done,identification:" + identification);
+                        log.debug("get student course done(" + course_res.succeeded() + "),identification:" + identification);
                     }
                     if(course_res.succeeded()) {
                         HashMap<String,CourseSchedule> courses_schedule = course_res.result();
@@ -412,8 +412,12 @@ public class MysqlProxy {
     //update
     public void update(String op,String hash,Handler<AsyncResult<UpdateResult>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.UpdateMessage>>> handler = res ->{
-            AsyncResult<UpdateResult> result = res.result().body().result();
-            reply.handle(result);
+            if(res.succeeded()) {
+                AsyncResult<UpdateResult> result = res.result().body().result();
+                reply.handle(result);
+            }else {
+                reply.handle(new Failed<UpdateResult>());
+            }
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name());
         MysqlMessage.UpdateMessage message = new MysqlMessage.UpdateMessage(op);
@@ -423,8 +427,12 @@ public class MysqlProxy {
 
     public void update(String op,String hash,long identification,Handler<AsyncResult<UpdateResult>> reply) {
         Handler<AsyncResult<Message<MysqlMessage.UpdateMessage>>> handler = res ->{
-            AsyncResult<UpdateResult> result = res.result().body().result();
-            reply.handle(result);
+            if(res.succeeded()) {
+                AsyncResult<UpdateResult> result = res.result().body().result();
+                reply.handle(result);
+            }else {
+                reply.handle(new Failed<UpdateResult>());
+            }
         };
         DeliveryOptions options = new DeliveryOptions().setCodecName(new UserMessageCodec.MysqlUpdate().name());
         MysqlMessage.UpdateMessage message = new MysqlMessage.UpdateMessage(op,identification);
