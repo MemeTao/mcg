@@ -1,7 +1,8 @@
-package cn.pgyyd.mcg.module;
+package cn.pgyyd.mcg.handler;
 
 import cn.pgyyd.mcg.constant.McgConst;
 import cn.pgyyd.mcg.ds.SelectCourseMessage;
+import cn.pgyyd.mcg.ds.UserMessageCodec;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;

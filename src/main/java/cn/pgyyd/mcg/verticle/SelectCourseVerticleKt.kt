@@ -2,7 +2,7 @@ package cn.pgyyd.mcg.verticle
 
 import cn.pgyyd.mcg.constant.McgConst
 import cn.pgyyd.mcg.ds.SelectCourseMessage
-import cn.pgyyd.mcg.module.UserMessageCodec
+import cn.pgyyd.mcg.ds.UserMessageCodec
 import cn.pgyyd.mcg.singleton.JobIDGenerator
 import io.vertx.core.eventbus.Message
 import io.vertx.ext.asyncsql.AsyncSQLClient

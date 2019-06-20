@@ -1,10 +1,8 @@
-package cn.pgyyd.mcg.module;
+package cn.pgyyd.mcg.handler;
 
-import cn.pgyyd.mcg.constant.McgConst;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
@@ -14,20 +12,14 @@ import org.apache.commons.lang3.StringUtils;
 
 
 //登录逻辑为 用户先从第三方统一认证中心获得token，再把uid和token拿来请求该服务的/login，
-//服务拿这些信息去第三方统一认证中心认证，认证成功后在session写入相关信息，并跳转index.html
+//服务拿这些信息去第三方统一认证中心认证，认证成功后在session写入相关信息，并告知前端登录成功
 @Slf4j
 public class LoginHandler implements Handler<RoutingContext> {
 
     private AuthProvider authProvider;
-    private String redirectURL;
+//    private String redirectURL;
 
-    public LoginHandler(AuthProvider authProvider, String redirectURL) {
-        if (StringUtils.isEmpty(redirectURL))
-            redirectURL = McgConst.INDEX_HTML;
-        if (!StringUtils.startsWith(redirectURL, "/"))
-            redirectURL = "/" + redirectURL;
-
-        this.redirectURL = redirectURL;
+    public LoginHandler(AuthProvider authProvider) {
         this.authProvider = authProvider;
     }
 
@@ -51,18 +43,27 @@ public class LoginHandler implements Handler<RoutingContext> {
                 //认证成功，创建用户
                 User user = e.result();
                 event.setUser(user);
-                //跳转到主页
-                log.debug(String.format("%s login succeed, do redirect", uid));
-                doRedirect(event.response(), redirectURL);
+                log.debug(String.format("user:%s login success", uid));
+                event.response()
+                        .putHeader("content-type", "application/json")
+                        .end(new JsonObject()
+                                .put("status_code", 0)
+                                .put("msg", "success")
+                                .toString());
             } else {
                 //认证失败
                 log.debug(String.format("%s login failed", uid));
-                event.fail(403);
+                event.response()
+                        .putHeader("content-type", "application/json")
+                        .end(new JsonObject()
+                                .put("status_code", 1)
+                                .put("msg", "登录失败")
+                                .toString());
             }
         });
     }
 
-    private void doRedirect(HttpServerResponse response, String directURL) {
-        response.putHeader("location", directURL).setStatusCode(302).end();
-    }
+//    private void doRedirect(HttpServerResponse response, String directURL) {
+//        response.putHeader("location", directURL).setStatusCode(302).end();
+//    }
 }

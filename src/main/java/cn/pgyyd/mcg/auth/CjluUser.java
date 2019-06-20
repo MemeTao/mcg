@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 
+//TODO: 存储更多学生相关信息
 public class CjluUser implements User {
 
     private JsonObject userData;

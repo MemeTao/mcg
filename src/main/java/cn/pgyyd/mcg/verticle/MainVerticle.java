@@ -2,7 +2,7 @@ package cn.pgyyd.mcg.verticle;
 
 import cn.pgyyd.mcg.auth.CjluAuth;
 import cn.pgyyd.mcg.constant.McgConst;
-import cn.pgyyd.mcg.module.*;
+import cn.pgyyd.mcg.handler.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
@@ -19,9 +19,9 @@ public class MainVerticle extends AbstractVerticle {
         HttpServer httpServer = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
-        //addLoginHandler(router);
         addMainPageHandler(router);
         addStaticResourceHandler(router);
+        addLoginHandler(router);
         addCourseInfoHandler(router);
         addSubmitSelectionHandler(router);
         addCheckSelectionResultHandler(router);

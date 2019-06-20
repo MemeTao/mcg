@@ -1,4 +1,4 @@
-package cn.pgyyd.mcg.module;
+package cn.pgyyd.mcg.ds;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

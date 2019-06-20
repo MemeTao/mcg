@@ -1,4 +1,4 @@
-package cn.pgyyd.mcg.module;
+package cn.pgyyd.mcg.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
