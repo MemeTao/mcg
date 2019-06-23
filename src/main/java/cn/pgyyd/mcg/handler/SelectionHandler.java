@@ -17,16 +17,22 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class SubmitSelectionHandler implements Handler<RoutingContext> {
+public class SelectionHandler implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext event) {
         String uid = event.request().getParam("uid");
         String courseids = event.request().getParam("courseids");
         
         if (StringUtils.isEmpty(uid) || StringUtils.isEmpty(courseids)) {
-            event.fail(400);
+            event.response()
+                    .putHeader("content-type", "application/json")
+                    .end(new JsonObject()
+                            .put("status_code", 1)
+                            .put("msg", "uid和courseids不能为空")
+                            .toString());
             return;
         }
+        //解析url参数courseids
         List<Integer> courseIdList;
         int userId;
         try {
@@ -38,10 +44,21 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                     .collect(Collectors.toList());
         } catch (NumberFormatException e) {
             log.error(String.format("parameters format wrong, uid:%s, courseids:%s", uid, courseids));
-            event.fail(400);
+            event.response()
+                    .putHeader("content-type", "application/json")
+                    .end(new JsonObject()
+                            .put("status_code", 1)
+                            .put("msg", "courseids格式错误")
+                            .toString());
             return;
         } catch (Exception e) {
-            //unknown exception
+            log.error("unknown error", e);
+            event.response()
+                    .putHeader("content-type", "application/json")
+                    .end(new JsonObject()
+                            .put("status_code", 1)
+                            .put("msg", "未知错误")
+                            .toString());
             return;
         }
 
@@ -51,8 +68,14 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
         DeliveryOptions deliveryOptions = new DeliveryOptions().setCodecName(new UserMessageCodec.SelectCourseMessageCodec().name());
         event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, msg, deliveryOptions, res -> {
             if (res.failed()) {
-                log.error(res.cause().toString());
-                event.response().end("fail");
+                log.error("send via eventbus fail", res.cause());
+                event.response()
+                        .putHeader("content-type", "application/json")
+                        .end(new JsonObject()
+                                .put("status_code", 1)
+                                .put("msg", "内部错误")
+                                .toString());
+                return;
             }
             SelectCourseMessage replyMsg = (SelectCourseMessage) res.result().body();
             switch (replyMsg.result.status) {
@@ -61,13 +84,13 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                     log.info("receive immediate reply from SelectCourseVerticleKt");
                     JsonArray selectResults = new JsonArray();
                     for (SelectCourseMessage.Result r : replyMsg.result.results) {
-                        selectResults.add(new JsonObject().put("course", r.courseID).put("status", r.success));
+                        selectResults.add(new JsonObject().put("course", r.courseID).put("success", r.success));
                     }
                     event.response()
                             .putHeader("content-type", "application/json")
                             .end(new JsonObject()
                                     .put("status_code", 0)
-                                    .put("result", selectResults)
+                                    .put("results", selectResults)
                                     .toString());
                     break;
                 //排队选课
@@ -77,11 +100,18 @@ public class SubmitSelectionHandler implements Handler<RoutingContext> {
                             .putHeader("content-type", "application/json")
                             .end(new JsonObject()
                                     .put("status_code", 1)
-                                    .put("job_id", replyMsg.result.jobID)
+                                    .put("jobid", replyMsg.result.jobID)
                                     .toString());
                     break;
                 default:
-                    log.info("receive wrong reply type");
+                    log.error("receive wrong reply type");
+                    event.response()
+                            .putHeader("content-type", "application/json")
+                            .end(new JsonObject()
+                                    .put("status_code", 1)
+                                    .put("msg", "内部错误")
+                                    .toString());
+                    return;
             }
         });
     }

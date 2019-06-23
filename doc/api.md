@@ -3,7 +3,7 @@ HEAD|SUMMARY
 -----|--------
 Author:| Numbaa, 
 Status:| Draft
-Date:| 15-June-2019
+Date:| 23-June-2019
 
 ### 1.登录接口
 #### 接口说明
@@ -88,8 +88,11 @@ Date:| 15-June-2019
 #### 返回结果
 |返回字段|字段类型|说明 |
 |:----- |:------|:----------------------------- |
-|status_code | int |返回结果状态。0：选课成功；1：选课失败；3：选课排队中 |
+|status_code | int |返回结果状态。0：选课完成（无论是否成功）；1：选课排队中； |
 |jobid| string | 排队id |
+|results|array|选课结果|
+|results.course|int|课程id|
+|results.success|bool|选课成功与否|
 
 ---
 ### 5.查询选课结果接口

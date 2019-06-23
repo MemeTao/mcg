@@ -23,7 +23,7 @@ public class MainVerticle extends AbstractVerticle {
         addStaticResourceHandler(router);
         addLoginHandler(router);
         addCourseInfoHandler(router);
-        addSubmitSelectionHandler(router);
+        addSelectionHandler(router);
         addCheckSelectionResultHandler(router);
 
         httpServer.requestHandler(router);
@@ -51,8 +51,8 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     //选课请求处理器
-    private void addSubmitSelectionHandler(Router router) {
-        router.route(HttpMethod.POST, McgConst.SELECT_QUERY_PATH).handler(new SubmitSelectionHandler());
+    private void addSelectionHandler(Router router) {
+        router.route(HttpMethod.POST, McgConst.SELECT_QUERY_PATH).handler(new SelectionHandler());
     }
 
     //轮询选课结果请求处理器
@@ -65,7 +65,7 @@ public class MainVerticle extends AbstractVerticle {
 
     //登录与认证处理器
     private void addLoginHandler(Router router) {
-        AuthProvider authProvider = new CjluAuth();
+        AuthProvider authProvider = new CjluAuth(vertx);
         //登录功能依次依赖于 用户session -> http session -> cookie
         router.route().handler(CookieHandler.create());
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
@@ -80,6 +80,6 @@ public class MainVerticle extends AbstractVerticle {
             }
             event.next();
         });
-        router.route(HttpMethod.POST, McgConst.LOGIN_QUERY_PATH).handler(new LoginHandler(authProvider, McgConst.INDEX_HTML));
+        router.route(HttpMethod.POST, McgConst.LOGIN_QUERY_PATH).handler(new LoginHandler(authProvider));
     }
 }

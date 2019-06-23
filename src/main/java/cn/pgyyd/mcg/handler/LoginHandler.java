@@ -34,7 +34,12 @@ public class LoginHandler implements Handler<RoutingContext> {
         String uid = event.request().getParam("uid");
         String token = event.request().getParam("token");
         if (StringUtils.isEmpty(uid) || StringUtils.isEmpty(token)) {
-            event.fail(400);
+            event.response()
+                    .putHeader("content-type", "application/json")
+                    .end(new JsonObject()
+                            .put("status_code", 1)
+                            .put("msg", "uid和token不能为空")
+                            .toString());
             return;
         }
         JsonObject authInfo = new JsonObject().put("uid", uid).put("token", token);

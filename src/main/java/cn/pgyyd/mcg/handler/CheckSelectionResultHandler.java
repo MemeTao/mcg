@@ -7,9 +7,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.redis.RedisClient;
 import io.vertx.redis.RedisOptions;
+import org.apache.commons.lang3.StringUtils;
 
 public class CheckSelectionResultHandler implements Handler<RoutingContext> {
-    //FIXME: 这种方式的RedisClient是所有线程共享一个连接，如果遇到性能瓶颈，可以改成一个线程一个RedisClient
     private RedisClient redisClient;
 
     public CheckSelectionResultHandler(Vertx vertx, JsonObject redisConfig) {
@@ -23,11 +23,21 @@ public class CheckSelectionResultHandler implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext event) {
         String jobID = event.request().getParam("jobid");
+        if (StringUtils.isEmpty(jobID)) {
+            event.response()
+                    .putHeader("content-type", "application/json")
+                    .end(new JsonObject()
+                            .put("status_code", 1)
+                            .put("msg", "jobid不能为空")
+                            .toString());
+            return;
+        }
+
         redisClient.get(jobID, res->{
             if (res.succeeded()) {
                 String[] redisResult = res.result().split("_");
                 if (redisResult.length != 0 && redisResult.length % 2 == 0) {
-                    JsonObject response = new JsonObject().put("status_code", 0);
+                    JsonObject response = new JsonObject().put("status_code", 0).put("msg", "success");
                     JsonArray results = new JsonArray();
                     for (int i = 0; i < redisResult.length; i+=2) {
                         results.add(new JsonObject()
@@ -44,7 +54,7 @@ public class CheckSelectionResultHandler implements Handler<RoutingContext> {
                             .putHeader("content-type", "application/json")
                             .end(new JsonObject()
                                     .put("status_code", -1)
-                                    .put("message", "result format wrong")
+                                    .put("msg", "result format wrong")
                                     .toString()
                             );
                 }
@@ -53,7 +63,7 @@ public class CheckSelectionResultHandler implements Handler<RoutingContext> {
                         .putHeader("content-type", "application/json")
                         .end(new JsonObject()
                                 .put("status_code", -1)
-                                .put("message", "query result fail")
+                                .put("msg", "query result fail")
                                 .toString()
                         );
             }
