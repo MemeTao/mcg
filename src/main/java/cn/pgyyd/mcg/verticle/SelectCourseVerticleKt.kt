@@ -1,6 +1,7 @@
 package cn.pgyyd.mcg.verticle
 
 import cn.pgyyd.mcg.constant.McgConst
+import cn.pgyyd.mcg.ds.CourseSchedule
 import cn.pgyyd.mcg.ds.SelectCourseMessage
 import cn.pgyyd.mcg.ds.UserMessageCodec
 import cn.pgyyd.mcg.singleton.JobIDGenerator
@@ -25,16 +26,6 @@ import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
 
-data class CourseSchedule(val course: Long, val week: Int, val day: Int, val section: Int) : Comparable<CourseSchedule> {
-    override fun compareTo(other: CourseSchedule): Int {
-        return when {
-            this.week != other.week -> this.week  - other.week
-            this.day != other.day -> this.day - other.day
-            this.section != other.section -> this.section - other.section
-            else -> 0
-        }
-    }
-}
 
 class SelectCourseVerticleKt : CoroutineVerticle() {
 

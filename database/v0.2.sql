@@ -6,11 +6,12 @@ use mcg;
 CREATE TABLE `mcg_courses` (
   `id` int(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
   `code` char(50) NOT NULL COMMENT '课程代码',
-  `students` int(20) NOT NULL COMMENT '开课人数',
+  `capacity` int(20) NOT NULL COMMENT '开课人数',
   `type` int(4) NOT NULL COMMENT '选课类型：0院选 1校选 2体育',
   `organization` int(20) DEFAULT NULL COMMENT '开课的二级学院',
    --else
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY (code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '待选课课程表';
 
 -- 剩余人数表
@@ -38,6 +39,6 @@ CREATE TABLE `mcg_course_schedule` (
   `code` char(64) NOT NULL COMMENT '课程代码',
   `week` int(8) NOT NULL COMMENT '第几周',
   `day` int(8) NOT NULL COMMENT '星期几',
-  `lessons` char(64) NOT NULL COMMENT '上课时间，以\‘,\'分割 .eg. 3,4    9,10,11',
+  `lessons` char(64) NOT NULL COMMENT '上课时间，以","分割 eg. 9,10,11',
    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '课程时间表';
