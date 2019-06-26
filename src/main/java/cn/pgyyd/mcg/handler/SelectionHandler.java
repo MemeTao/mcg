@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 public class SelectionHandler implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext event) {
-        String uid = event.request().getParam("uid");
+        String userId = event.request().getParam("uid");
         String courseids = event.request().getParam("courseids");
         
-        if (StringUtils.isEmpty(uid) || StringUtils.isEmpty(courseids)) {
+        if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(courseids)) {
             event.response()
                     .putHeader("content-type", "application/json")
                     .end(new JsonObject()
@@ -33,17 +33,15 @@ public class SelectionHandler implements Handler<RoutingContext> {
             return;
         }
         //解析url参数courseids
-        List<Integer> courseIdList;
-        int userId;
+        List<Long> courseIdList;
         try {
-            userId = Integer.parseInt(uid);
             courseIdList = Arrays.stream(courseids.split(","))
                     .filter(s -> !s.isEmpty())
-                    .mapToInt(Integer::parseInt)
+                    .mapToLong(Long::parseLong)
                     .boxed()
                     .collect(Collectors.toList());
         } catch (NumberFormatException e) {
-            log.error(String.format("parameters format wrong, uid:%s, courseids:%s", uid, courseids));
+            log.error(String.format("parameters format wrong, courseids:%s", courseids));
             event.response()
                     .putHeader("content-type", "application/json")
                     .end(new JsonObject()

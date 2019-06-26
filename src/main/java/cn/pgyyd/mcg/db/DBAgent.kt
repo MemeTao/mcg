@@ -1,12 +1,23 @@
 package cn.pgyyd.mcg.db
 
 import cn.pgyyd.mcg.ds.CourseSchedule
+import io.vertx.core.Vertx
+import io.vertx.core.json.JsonArray
 
-class DBAgent {
 
-    private val mysqlProxy = MysqlProxy()
+/**
+ * 封装数据库业务
+ */
+class DBAgent(vertx: Vertx, dbConfig: JsonArray) {
 
-    suspend fun queryStudentSchedule(userId: String): List<CourseSchedule>? {
+    private val mysqlProxy = MysqlProxy(vertx, dbConfig)
+
+
+    /** 查询学生课表
+     * @param userId 学生学号
+     * @return 学生课表（未排序）
+     */
+    suspend fun queryStudentSchedule(userId: String): List<CourseSchedule> {
         val querySql = """SELECT b.course_id, b.week, b.day_of_week, b.section_of_day
  FROM tb_student_course a, tb_course_schedule b
  WHERE a.course_id = b.course_id AND a.student_id = $userId;"""
@@ -24,6 +35,11 @@ class DBAgent {
         return courseSchedule
     }
 
+
+    /** 查询待选课的课程时间表
+     * @param courseIds 待选的课程id
+     * @return 待选课的课程时间表（未排序）
+     */
     suspend fun queryCoursesSchedule(courseIds: List<Long>): Map<Long, List<CourseSchedule>> {
         val builder = StringBuilder("""SELECT course_id, week, day_of_week, section_of_day
  FROM tb_course_schedule
@@ -53,12 +69,22 @@ class DBAgent {
         return coursesSchedule
     }
 
+    /** 更新待选课的剩余人数
+     * @param courseId 课程id
+     * @return 是否更新成功
+     */
     suspend fun updateCourseReamin(courseId: Long) : Boolean {
         val mysqlConn = mysqlProxy.dispatch()
         val updateResult = mysqlConn.update("some sql statement")
         return updateResult.updated == 1
     }
 
+
+    /** 插入一条建立{学生-课程}关系的记录
+     * @param userId 学生学号
+     * @param courseId 课程id
+     * @return 建立关系是否成功
+     */
     suspend fun insertStudentCourseRelation(userId: String, courseId: Long) : Boolean {
         val mysqlConn = mysqlProxy.dispatch(userId)
         val updateResult = mysqlConn.update("some sql statement")

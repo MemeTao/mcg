@@ -5,12 +5,12 @@ import java.util.List;
 
 public class SelectCourseMessage implements Serializable {
     public class SelectCourseRequest {
-        public SelectCourseRequest(int uid, List<Integer> courses) {
+        public SelectCourseRequest(String uid, List<Long> courses) {
             userID = uid;
             courseIDs = courses;
         }
-        public int userID;
-        public List<Integer> courseIDs;
+        public String userID;
+        public List<Long> courseIDs;
     }
     public class SelectCourseResult {
 

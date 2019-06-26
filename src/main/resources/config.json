@@ -14,5 +14,29 @@
     "redis": {
         "host": "127.0.0.1",
         "auth": "123456"
-    }
+    },
+    "mysql_experimental" : [
+        {
+            "host": "localhost",
+            "user": "ntu",
+            "password": "123456",
+            "database": "mcg1",
+            "pattern": "^H?\\d{3}03\\d{5}",
+            "comment": "信息工程学院"
+        },
+        {
+            "host": "localhost",
+            "user": "ntu",
+            "password": "123456",
+            "database": "mcg2",
+            "pattern": "^1400"
+        },
+        {
+            "host": "localhost",
+            "user": "ntu",
+            "password": "123456",
+            "database": "mcg4",
+            "pattern": "^1400"
+        }
+    ]
 }
