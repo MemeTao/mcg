@@ -12,7 +12,6 @@ import io.vertx.kotlin.coroutines.receiveChannelHandler
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.kotlin.redis.setAwait
 import io.vertx.redis.RedisClient
@@ -22,9 +21,9 @@ import kotlin.random.Random
 
 
 
-class SelectCourseVerticleKt : CoroutineVerticle() {
+class SelectCourseVerticle : CoroutineVerticle() {
 
-    val log = LoggerFactory.getLogger(SelectCourseVerticleKt::class.java)
+    val log = LoggerFactory.getLogger(SelectCourseVerticle::class.java)
 
     private lateinit var redisClient : RedisClient
     private lateinit var dbAgent: DBAgent
@@ -36,10 +35,9 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
     private val deliveryOptions = DeliveryOptions().setCodecName(UserMessageCodec.SelectCourseMessageCodec().name())
 
     override suspend fun start() {
-
         //初始化任务并发限制
         val maxDoingJobs = config.getInteger("max_doing_jobs", 10)
-        log.info("Start SelectCourseVerticleKt with max_doing_jobs:$maxDoingJobs")
+        log.info("Start SelectCourseVerticle with max_doing_jobs:$maxDoingJobs")
         for (i in 1 until maxDoingJobs) {
             emptySeat.add(1)
         }
@@ -64,7 +62,9 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
         }
         JobIDGenerator.init(nodeId)
 
+        //注册EventBus消息Codec
         vertx.eventBus().registerCodec(UserMessageCodec.SelectCourseMessageCodec())
+        //用一个协程Adapter包装异步的EventBus
         val adapter = vertx.receiveChannelHandler<Message<SelectCourseMessage>>()
         vertx.eventBus().consumer(McgConst.EVENT_BUS_SELECT_COURSE, adapter)
         //启动一个协程，此协程将运行在当前线程下
@@ -73,12 +73,12 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
                 val msg = adapter.receive()
                 val seat: Int? = emptySeat.poll()
                 val jobID = JobIDGenerator.getInstance().generate()
-                if (seat == null) {
+                if (seat == null) {     //并发已满，将此消息放入queue中，并立马返回一个jobid
                     log.info(String.format("push_job %d to queue", jobID))
                     waitForAvailableSeat(msg)
                     msg.body().result = msg.body().SelectCourseResult(1, jobID)
                     msg.reply(msg.body(), deliveryOptions)
-                } else {
+                } else {                //并发未满，立即处理选课
                     msg.body().result = msg.body().SelectCourseResult(0, jobID)
                     //启动一个协程，此协程将运行在当前线程下
                     launch { doSelectCourse(msg) }
@@ -95,17 +95,14 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
     }
 
     private suspend fun doSelectCourse(msg: Message<SelectCourseMessage>) {
+        //获取这个学生的必修课课表(此论选课前已有的课)
         val studentCourseSchedule = dbAgent.queryStudentSchedule(msg.body().request.userID)
-        val sortedStudentCourseSchedule: List<CourseSchedule>
-        //获取学生课表失败
-        //这里有个逻辑，就是不允许学生的“必须课表”是空，这被当作是读mysql错误
-        if (studentCourseSchedule.isEmpty()) {
-            //如果是非排队请求，立马返回，告知失败
-            if (msg.body().result.status == 0) {
+        val sortedStudentCourseSchedule = studentCourseSchedule.sorted()
+        if (studentCourseSchedule.isEmpty()) {          //获取学生课表失败（一门课都没获取到当作是失败）
+            if (msg.body().result.status == 0) {        //如果是非排队请求，立马返回，告知失败
                 msg.body().result.results = ArrayList<SelectCourseMessage.Result>()
                 msg.reply(msg.body(), deliveryOptions)
-            } else {
-                //结果插入redis
+            } else {                                    //如果是排队请求，将失败结果插入redis
                 val builder = StringBuilder()
                 for (idx in 0 until msg.body().request.courseIDs.size) {
                     if (idx != 0)
@@ -118,26 +115,31 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
             }
             tryPollJobQueue()
             return
-        } else {
-            sortedStudentCourseSchedule = studentCourseSchedule.sorted()
         }
 
         msg.body().result.results = ArrayList<SelectCourseMessage.Result>()
+        //获取待选课的课程时间表
         val toSelectCoursesSchedule = dbAgent.queryCoursesSchedule(msg.body().request.courseIDs)
-        for (course in toSelectCoursesSchedule) {
-            if (timeMatch(sortedStudentCourseSchedule, course.value)) {
-                //FIXME: 如果这么干，学生自己选的课时间有可能冲突，一个方法是从Login处限制一个用户只能有一个session
-                val updated = dbAgent.updateCourseReamin(course.key)
-                if (updated) {
-                    msg.body().result.results.add(msg.body().Result(false, course.key))
-                    continue
-                }
-                //FIXME: 有没有可能一次不成功，要update多次
-                dbAgent.insertStudentCourseRelation(msg.body().request.userID, course.key)
-                msg.body().result.results.add(msg.body().Result(true, course.key))
-            } else {
-                msg.body().result.results.add(msg.body().Result(false, course.key))
+        for (courseSchedule in toSelectCoursesSchedule) {
+            //判断该门课的课表是否与学生已有的课冲突
+            val match = timeMatch(sortedStudentCourseSchedule, courseSchedule.value)
+            if (!match) {
+                msg.body().result.results.add(msg.body().Result(false, courseSchedule.key))
+                continue
             }
+            //尝试为该学生在这门课占一个位置
+            val updated = dbAgent.updateCourseReamin(courseSchedule.key)
+            if (!updated) {
+                msg.body().result.results.add(msg.body().Result(false, courseSchedule.key))
+                continue
+            }
+            //建立{学生-课程}关系，代表学生已选这门课
+            val selected = dbAgent.insertStudentCourseRelation(msg.body().request.userID, courseSchedule.key)
+            if (!selected) {
+                msg.body().result.results.add(msg.body().Result(false, courseSchedule.key))
+                continue
+            }
+            msg.body().result.results.add(msg.body().Result(true, courseSchedule.key))
         }
         //结果插入redis
         val builder = StringBuilder()
@@ -150,7 +152,11 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
             builder.append(tempResult[idx].success)
         }
         redisClient.setAwait(msg.body().result.jobID.toString(), builder.toString())
-        msg.reply(msg.body(), deliveryOptions)
+
+        //如果是非排队请求，返回结果
+        if (msg.body().result.status == 0) {
+            msg.reply(msg.body(), deliveryOptions)
+        }
         tryPollJobQueue()
     }
 
@@ -187,38 +193,3 @@ class SelectCourseVerticleKt : CoroutineVerticle() {
 
 }
 
-// some helper function
-private fun makeStudentScheduleSQL(uid: Int) : String {
-    return """SELECT b.course_id, b.week, b.day_of_week, b.section_of_day
- FROM tb_student_course a, tb_course_schedule b
- WHERE a.course_id = b.course_id AND a.student_id = $uid;"""
-}
-
-private fun makeCourseTimeSQL(uids: List<Int>) : String {
-    val builder = StringBuilder("""SELECT course_id, week, day_of_week, section_of_day
- FROM tb_course_schedule
- WHERE course_id IN (""")
-    for (i in 0 until uids.size) {
-        if (i == 0) {
-            builder.append(uids[i])
-        } else {
-            builder.append(",")
-            builder.append(uids[i])
-        }
-    }
-    builder.append(");")
-    return builder.toString()
-}
-
-private fun makeUpdateCourseRemainSQL(courseId: Long) : String {
-    return """UPDATE tb_course
- SET students = students + 1
- WHERE course_id = $courseId;"""
-}
-
-private fun makeInsertStudentCourseRelationSQL(uid: Int, courseId: Long) : String {
-    return """INSERT INTO tb_student_course
- (student_id, course_id)
- VALUES
- ($uid, $courseId);"""
-}

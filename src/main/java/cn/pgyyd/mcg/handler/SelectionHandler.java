@@ -62,7 +62,7 @@ public class SelectionHandler implements Handler<RoutingContext> {
 
         SelectCourseMessage msg = new SelectCourseMessage();
         msg.request = msg.new SelectCourseRequest(userId, courseIdList);
-        log.info("send request to SelectCourseVerticleKt");
+        log.info("send request to SelectCourseVerticle");
         DeliveryOptions deliveryOptions = new DeliveryOptions().setCodecName(new UserMessageCodec.SelectCourseMessageCodec().name());
         event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, msg, deliveryOptions, res -> {
             if (res.failed()) {
@@ -79,7 +79,7 @@ public class SelectionHandler implements Handler<RoutingContext> {
             switch (replyMsg.result.status) {
                 //处理完成
                 case 0:
-                    log.info("receive immediate reply from SelectCourseVerticleKt");
+                    log.info("receive immediate reply from SelectCourseVerticle");
                     JsonArray selectResults = new JsonArray();
                     for (SelectCourseMessage.Result r : replyMsg.result.results) {
                         selectResults.add(new JsonObject().put("course", r.courseID).put("success", r.success));
@@ -93,7 +93,7 @@ public class SelectionHandler implements Handler<RoutingContext> {
                     break;
                 //排队选课
                 case 1:
-                    log.info("receive pending reply from SelectCourseVerticleKt");
+                    log.info("receive pending reply from SelectCourseVerticle");
                     event.response()
                             .putHeader("content-type", "application/json")
                             .end(new JsonObject()

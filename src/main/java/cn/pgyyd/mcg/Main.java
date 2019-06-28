@@ -30,9 +30,9 @@ public class Main {
                 Future<String> selectFuture = Future.future();
                 //vertx.deployVerticle(MySqlVerticle.class.getName(), mysqlFuture);
                 //vertx.deployVerticle(RedisClientVerticle.class.getName(), redisFuture);
-                //vertx.deployVerticle(SelectCourseVerticleKt.class.getName(), selectFuture);
+                //vertx.deployVerticle(SelectCourseVerticle.class.getName(), selectFuture);
                 //CompositeFuture.all(redisFuture, selectFuture).setHandler(ar->{
-                vertx.deployVerticle(new SelectCourseVerticleKt(), new DeploymentOptions().setConfig(cfg.result()), ar-> {
+                vertx.deployVerticle(new SelectCourseVerticle(), new DeploymentOptions().setConfig(cfg.result()), ar-> {
                     if (ar.succeeded()) {
                         JsonObject config = cfg.result();
                         DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(config);
