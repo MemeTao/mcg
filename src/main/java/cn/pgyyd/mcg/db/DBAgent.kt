@@ -40,7 +40,7 @@ class DBAgent(vertx: Vertx, dbConfig: JsonArray) {
      * @param courseIds 待选的课程id
      * @return 待选课的课程时间表（未排序）
      */
-    suspend fun queryCoursesSchedule(courseIds: List<Long>): Map<Long, List<CourseSchedule>> {
+    suspend fun queryCoursesSchedule(courseIds: List<String>): Map<String, List<CourseSchedule>> {
         val builder = StringBuilder("""SELECT course_id, week, day_of_week, section_of_day
  FROM tb_course_schedule
  WHERE course_id IN (""")
@@ -57,9 +57,9 @@ class DBAgent(vertx: Vertx, dbConfig: JsonArray) {
         val querySql = builder.toString()
         val mysqlConn = mysqlProxy.dispatch()
         val resultSet = mysqlConn.query(querySql).results
-        val coursesSchedule = HashMap<Long, MutableList<CourseSchedule>>()
+        val coursesSchedule = HashMap<String, MutableList<CourseSchedule>>()
         for (row in resultSet) {
-            coursesSchedule.getOrPut(row.getLong(0), {ArrayList()})
+            coursesSchedule.getOrPut(row.getString(0), {ArrayList()})
                     .add(CourseSchedule(
                             row.getLong(0),     //courseId
                             row.getInteger(1),  //week
@@ -73,7 +73,7 @@ class DBAgent(vertx: Vertx, dbConfig: JsonArray) {
      * @param courseId 课程id
      * @return 是否更新成功
      */
-    suspend fun updateCourseReamin(courseId: Long) : Boolean {
+    suspend fun updateCourseReamin(courseId: String) : Boolean {
         val mysqlConn = mysqlProxy.dispatch()
         val updateResult = mysqlConn.update("some sql statement")
         return updateResult.updated == 1
@@ -85,7 +85,7 @@ class DBAgent(vertx: Vertx, dbConfig: JsonArray) {
      * @param courseId 课程id
      * @return 建立关系是否成功
      */
-    suspend fun insertStudentCourseRelation(userId: String, courseId: Long) : Boolean {
+    suspend fun insertStudentCourseRelation(userId: String, courseId: String) : Boolean {
         val mysqlConn = mysqlProxy.dispatch(userId)
         val updateResult = mysqlConn.update("some sql statement")
         return updateResult.updated == 1

@@ -14,10 +14,10 @@ import io.vertx.ext.web.RoutingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.stream.Collectors;
-
 @Slf4j
 public class SelectionHandler implements Handler<RoutingContext> {
+    private DeliveryOptions deliveryOptions = new DeliveryOptions().setCodecName(new UserMessageCodec.SelectCourseMessageCodec().name());
+
     @Override
     public void handle(RoutingContext event) {
         String userId = event.request().getParam("uid");
@@ -32,38 +32,9 @@ public class SelectionHandler implements Handler<RoutingContext> {
                             .toString());
             return;
         }
-        //解析url参数courseids
-        List<Long> courseIdList;
-        try {
-            courseIdList = Arrays.stream(courseids.split(","))
-                    .filter(s -> !s.isEmpty())
-                    .mapToLong(Long::parseLong)
-                    .boxed()
-                    .collect(Collectors.toList());
-        } catch (NumberFormatException e) {
-            log.error(String.format("parameters format wrong, courseids:%s", courseids));
-            event.response()
-                    .putHeader("content-type", "application/json")
-                    .end(new JsonObject()
-                            .put("status_code", 1)
-                            .put("msg", "courseids格式错误")
-                            .toString());
-            return;
-        } catch (Exception e) {
-            log.error("unknown error", e);
-            event.response()
-                    .putHeader("content-type", "application/json")
-                    .end(new JsonObject()
-                            .put("status_code", 1)
-                            .put("msg", "未知错误")
-                            .toString());
-            return;
-        }
-
+        List<String> courseIdList = Arrays.asList(courseids.split(","));
         SelectCourseMessage msg = new SelectCourseMessage();
         msg.request = msg.new SelectCourseRequest(userId, courseIdList);
-        log.info("send request to SelectCourseVerticle");
-        DeliveryOptions deliveryOptions = new DeliveryOptions().setCodecName(new UserMessageCodec.SelectCourseMessageCodec().name());
         event.vertx().eventBus().send(McgConst.EVENT_BUS_SELECT_COURSE, msg, deliveryOptions, res -> {
             if (res.failed()) {
                 log.error("send via eventbus fail", res.cause());
@@ -82,7 +53,7 @@ public class SelectionHandler implements Handler<RoutingContext> {
                     log.info("receive immediate reply from SelectCourseVerticle");
                     JsonArray selectResults = new JsonArray();
                     for (SelectCourseMessage.Result r : replyMsg.result.results) {
-                        selectResults.add(new JsonObject().put("course", r.courseID).put("success", r.success));
+                        selectResults.add(new JsonObject().put("course", r.courseId).put("success", r.success));
                     }
                     event.response()
                             .putHeader("content-type", "application/json")
@@ -98,7 +69,7 @@ public class SelectionHandler implements Handler<RoutingContext> {
                             .putHeader("content-type", "application/json")
                             .end(new JsonObject()
                                     .put("status_code", 1)
-                                    .put("jobid", replyMsg.result.jobID)
+                                    .put("jobid", replyMsg.result.jobId)
                                     .toString());
                     break;
                 default:

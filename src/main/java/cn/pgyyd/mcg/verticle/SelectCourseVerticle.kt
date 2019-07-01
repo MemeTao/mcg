@@ -96,7 +96,7 @@ class SelectCourseVerticle : CoroutineVerticle() {
 
     private suspend fun doSelectCourse(msg: Message<SelectCourseMessage>) {
         //获取这个学生的必修课课表(此论选课前已有的课)
-        val studentCourseSchedule = dbAgent.queryStudentSchedule(msg.body().request.userID)
+        val studentCourseSchedule = dbAgent.queryStudentSchedule(msg.body().request.userId)
         val sortedStudentCourseSchedule = studentCourseSchedule.sorted()
         if (studentCourseSchedule.isEmpty()) {          //获取学生课表失败（一门课都没获取到当作是失败）
             if (msg.body().result.status == 0) {        //如果是非排队请求，立马返回，告知失败
@@ -104,14 +104,14 @@ class SelectCourseVerticle : CoroutineVerticle() {
                 msg.reply(msg.body(), deliveryOptions)
             } else {                                    //如果是排队请求，将失败结果插入redis
                 val builder = StringBuilder()
-                for (idx in 0 until msg.body().request.courseIDs.size) {
+                for (idx in 0 until msg.body().request.courseIds.size) {
                     if (idx != 0)
                         builder.append("_")
-                    builder.append(msg.body().request.courseIDs[idx])
+                    builder.append(msg.body().request.courseIds[idx])
                     builder.append("_")
                     builder.append(false)
                 }
-                redisClient.setAwait(msg.body().result.jobID.toString(), builder.toString())
+                redisClient.setAwait(msg.body().result.jobId.toString(), builder.toString())
             }
             tryPollJobQueue()
             return
@@ -119,7 +119,7 @@ class SelectCourseVerticle : CoroutineVerticle() {
 
         msg.body().result.results = ArrayList<SelectCourseMessage.Result>()
         //获取待选课的课程时间表
-        val toSelectCoursesSchedule = dbAgent.queryCoursesSchedule(msg.body().request.courseIDs)
+        val toSelectCoursesSchedule = dbAgent.queryCoursesSchedule(msg.body().request.courseIds)
         for (courseSchedule in toSelectCoursesSchedule) {
             //判断该门课的课表是否与学生已有的课冲突
             val match = timeMatch(sortedStudentCourseSchedule, courseSchedule.value)
@@ -134,7 +134,7 @@ class SelectCourseVerticle : CoroutineVerticle() {
                 continue
             }
             //建立{学生-课程}关系，代表学生已选这门课
-            val selected = dbAgent.insertStudentCourseRelation(msg.body().request.userID, courseSchedule.key)
+            val selected = dbAgent.insertStudentCourseRelation(msg.body().request.userId, courseSchedule.key)
             if (!selected) {
                 msg.body().result.results.add(msg.body().Result(false, courseSchedule.key))
                 continue
@@ -147,11 +147,11 @@ class SelectCourseVerticle : CoroutineVerticle() {
         for (idx in 0 until tempResult.size) {
             if (idx != 0)
                 builder.append("_")
-            builder.append(tempResult[idx].courseID)
+            builder.append(tempResult[idx].courseId)
             builder.append("_")
             builder.append(tempResult[idx].success)
         }
-        redisClient.setAwait(msg.body().result.jobID.toString(), builder.toString())
+        redisClient.setAwait(msg.body().result.jobId.toString(), builder.toString())
 
         //如果是非排队请求，返回结果
         if (msg.body().result.status == 0) {
