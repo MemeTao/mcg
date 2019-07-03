@@ -1,6 +1,6 @@
 package cn.pgyyd.mcg.ds
 
-data class CourseSchedule(val course: Long, val week: Int, val day: Int, val section: Int) : Comparable<CourseSchedule> {
+data class CourseSchedule(val course: String, val week: Int, val day: Int, val section: Int) : Comparable<CourseSchedule> {
     override fun compareTo(other: CourseSchedule): Int {
         return when {
             this.week != other.week -> this.week  - other.week

@@ -50,8 +50,8 @@ class SelectCourseVerticle : CoroutineVerticle() {
                 )
         log.info("redisClient started")
 
-        //初始化mysql
-        dbAgent = DBAgent(vertx, config.getJsonArray("dbs"))
+        //初始化mysql, 有点丑
+        dbAgent = DBAgent(vertx, this, config.getJsonArray("dbs"))
         log.info("mysqlClients started")
 
         //初始化JobID生成器
@@ -73,15 +73,13 @@ class SelectCourseVerticle : CoroutineVerticle() {
                 val msg = adapter.receive()
                 val seat: Int? = emptySeat.poll()
                 val jobID = JobIDGenerator.getInstance().generate()
-                if (seat == null) {     //并发已满，将此消息放入queue中，并立马返回一个jobid
-                    log.info(String.format("push_job %d to queue", jobID))
+                if (seat == null) {             //并发已满，将此消息放入queue中，并立马返回一个jobid
                     waitForAvailableSeat(msg)
                     msg.body().result = msg.body().SelectCourseResult(1, jobID)
                     msg.reply(msg.body(), deliveryOptions)
-                } else {                //并发未满，立即处理选课
+                } else {                        //并发未满，立即处理选课
                     msg.body().result = msg.body().SelectCourseResult(0, jobID)
-                    //启动一个协程，此协程将运行在当前线程下
-                    launch { doSelectCourse(msg) }
+                    launch { doSelectCourse(msg) }      //启动一个协程，此协程将运行在当前线程下
                 }
             }
         }
@@ -91,12 +89,12 @@ class SelectCourseVerticle : CoroutineVerticle() {
 
     private fun waitForAvailableSeat(msg: Message<SelectCourseMessage>) {
         jobQueue.add(msg)
-        //log.info("add request to queue, queue size:${jobQueue.size}")
     }
 
     private suspend fun doSelectCourse(msg: Message<SelectCourseMessage>) {
+        val userId = msg.body().request.userId
         //获取这个学生的必修课课表(此论选课前已有的课)
-        val studentCourseSchedule = dbAgent.queryStudentSchedule(msg.body().request.userId)
+        val studentCourseSchedule = dbAgent.queryStudentSchedule(userId)
         val sortedStudentCourseSchedule = studentCourseSchedule.sorted()
         if (studentCourseSchedule.isEmpty()) {          //获取学生课表失败（一门课都没获取到当作是失败）
             if (msg.body().result.status == 0) {        //如果是非排队请求，立马返回，告知失败
@@ -119,7 +117,7 @@ class SelectCourseVerticle : CoroutineVerticle() {
 
         msg.body().result.results = ArrayList<SelectCourseMessage.Result>()
         //获取待选课的课程时间表
-        val toSelectCoursesSchedule = dbAgent.queryCoursesSchedule(msg.body().request.courseIds)
+        val toSelectCoursesSchedule = dbAgent.queryOptCoursesSchedule(msg.body().request.courseIds)
         for (courseSchedule in toSelectCoursesSchedule) {
             //判断该门课的课表是否与学生已有的课冲突
             val match = timeMatch(sortedStudentCourseSchedule, courseSchedule.value)
@@ -128,15 +126,19 @@ class SelectCourseVerticle : CoroutineVerticle() {
                 continue
             }
             //尝试为该学生在这门课占一个位置
-            val updated = dbAgent.updateCourseReamin(courseSchedule.key)
+            val updated = dbAgent.minusCourseRemain(userId, courseSchedule.key)
             if (!updated) {
                 msg.body().result.results.add(msg.body().Result(false, courseSchedule.key))
                 continue
             }
             //建立{学生-课程}关系，代表学生已选这门课
-            val selected = dbAgent.insertStudentCourseRelation(msg.body().request.userId, courseSchedule.key)
+            val selected = dbAgent.insertStudentCourseRelation(userId, courseSchedule.key)
             if (!selected) {
                 msg.body().result.results.add(msg.body().Result(false, courseSchedule.key))
+                val fallbackSuccess = dbAgent.plusCourseRemain(userId, courseSchedule.key)
+                if (!fallbackSuccess) {
+                    log.error("course remain auto fallback fail, need fallback by hand")
+                }
                 continue
             }
             msg.body().result.results.add(msg.body().Result(true, courseSchedule.key))
@@ -179,14 +181,10 @@ class SelectCourseVerticle : CoroutineVerticle() {
     }
 
     private fun tryPollJobQueue() {
-        //log.info("tryPollJobQueue jobQueue.size:${jobQueue.size}")
         val task = jobQueue.poll()
         if (task != null) {
-            launch {
-                doSelectCourse(task)
-            }
+            launch { doSelectCourse(task) }
         } else if (emptySeat.size < config.getInteger("max_doing_jobs")) {
-            //log.info("tryPollJobQueue add to emptySeat")
             emptySeat.add(1)
         }
     }

@@ -1,4 +1,3 @@
--- mcg_common 所有数据都是静态的，包含学生表、必修课相关表
 DROP DATABASE mcg_common;
 CREATE  DATABASE mcg_common;
 USE mcg_common;
@@ -44,7 +43,7 @@ CREATE TABLE `req_student_course` (
 
 
 ------------------------------------------------------------------
--- 下面是选修的，可以根据每个学院存在不同的数据库中
+-- mcg_option数据库每个学院都有一份，其中的静态表可能不同学院的会有重复数据
 DROP DATABASE mcg_option;
 CREATE  DATABASE mcg_option;
 USE mcg_option;
@@ -53,7 +52,7 @@ USE mcg_option;
 CREATE TABLE `opt_course` (
   -- 课程代码示例：(2012-2013-2)-K0110570-00A1105013-2
   `cid` VARCHAR(50) NOT NULL COMMENT '课程代码',
-  `cap` INT(11) NOT NULL COMMENT '课程容量',
+  `capacity` INT(11) NOT NULL COMMENT '课程容量',
   `ctype` INT(4) NOT NULL COMMENT '课程类型：院选 校选 体育',
   `org` INT(11) DEFAULT NULL COMMENT '开课的二级学院',
   PRIMARY KEY (`cid`)
@@ -78,7 +77,7 @@ CREATE TABLE `opt_course_schedule` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '选修课时间表';
 
 -- 学生-选修课程 关系表
-CREATE TABLE `req_student_course` (
+CREATE TABLE `opt_student_course` (
     `id` INT(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
     `uid` VARCHAR(20) NOT NULL COMMENT '学号',
     `cid` VARCHAR(50) NOT NULL COMMENT '课程代码',
