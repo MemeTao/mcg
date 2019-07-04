@@ -104,7 +104,6 @@ class SelectCourseVerticle : CoroutineVerticle() {
 
     private suspend fun doSelectCourse(msg: Message<SelectCourseMessage>) {
         val userId = msg.body().request.userId
-        val lockGuard = UserLockGuard(userId, this)
         //获取这个学生的必修课课表(此论选课前已有的课)
         val studentCourseSchedule = dbAgent.queryStudentSchedule(userId)
         val sortedStudentCourseSchedule = studentCourseSchedule.sorted()
@@ -123,6 +122,7 @@ class SelectCourseVerticle : CoroutineVerticle() {
                 }
                 redisClient.setAwait(msg.body().result.jobId.toString(), builder.toString())
             }
+            releaseUser(userId)
             tryPollJobQueue()
             return
         }
@@ -171,6 +171,7 @@ class SelectCourseVerticle : CoroutineVerticle() {
         if (msg.body().result.status == 0) {
             msg.reply(msg.body(), deliveryOptions)
         }
+        releaseUser(userId)
         tryPollJobQueue()
     }
 
@@ -208,12 +209,6 @@ class SelectCourseVerticle : CoroutineVerticle() {
 
     private fun releaseUser(userId: String) {
         lockedUser.remove(userId)
-    }
-
-    class UserLockGuard(val userId: String, val parent: SelectCourseVerticle) {
-        fun done() {
-            parent.releaseUser(userId)
-        }
     }
 
 }
