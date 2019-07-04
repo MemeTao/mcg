@@ -11,12 +11,12 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.receiveChannelHandler
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.collections.ArrayList
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.kotlin.redis.setAwait
 import io.vertx.redis.RedisClient
 import io.vertx.redis.RedisOptions
 import org.slf4j.LoggerFactory
+import kotlin.collections.HashMap
 import kotlin.random.Random
 
 
@@ -33,6 +33,8 @@ class SelectCourseVerticle : CoroutineVerticle() {
     private var jobQueue = ArrayDeque<Message<SelectCourseMessage>>()
 
     private val deliveryOptions = DeliveryOptions().setCodecName(UserMessageCodec.SelectCourseMessageCodec().name())
+
+    private val lockedUser = HashMap<String, Long>()
 
     override suspend fun start() {
         //初始化任务并发限制
@@ -71,14 +73,23 @@ class SelectCourseVerticle : CoroutineVerticle() {
         launch {
             while (true) {
                 val msg = adapter.receive()
+                val newJobId = JobIDGenerator.getInstance().generate()
+                //不允许用户同时发送多个选课请求
+                val userId = msg.body().request.userId
+                val lockedJobId = tryLockUser(userId, newJobId)
+                if (lockedJobId != null) {
+                    msg.body().result = msg.body().SelectCourseResult(2, lockedJobId)
+                    msg.reply(msg.body(), deliveryOptions)
+                    continue
+                }
+
                 val seat: Int? = emptySeat.poll()
-                val jobID = JobIDGenerator.getInstance().generate()
                 if (seat == null) {             //并发已满，将此消息放入queue中，并立马返回一个jobid
                     waitForAvailableSeat(msg)
-                    msg.body().result = msg.body().SelectCourseResult(1, jobID)
+                    msg.body().result = msg.body().SelectCourseResult(1, newJobId)
                     msg.reply(msg.body(), deliveryOptions)
                 } else {                        //并发未满，立即处理选课
-                    msg.body().result = msg.body().SelectCourseResult(0, jobID)
+                    msg.body().result = msg.body().SelectCourseResult(0, newJobId)
                     launch { doSelectCourse(msg) }      //启动一个协程，此协程将运行在当前线程下
                 }
             }
@@ -93,6 +104,7 @@ class SelectCourseVerticle : CoroutineVerticle() {
 
     private suspend fun doSelectCourse(msg: Message<SelectCourseMessage>) {
         val userId = msg.body().request.userId
+        val lockGuard = UserLockGuard(userId, this)
         //获取这个学生的必修课课表(此论选课前已有的课)
         val studentCourseSchedule = dbAgent.queryStudentSchedule(userId)
         val sortedStudentCourseSchedule = studentCourseSchedule.sorted()
@@ -186,6 +198,21 @@ class SelectCourseVerticle : CoroutineVerticle() {
             launch { doSelectCourse(task) }
         } else if (emptySeat.size < config.getInteger("max_doing_jobs")) {
             emptySeat.add(1)
+        }
+    }
+
+    private fun tryLockUser(userId: String, newJobId: Long) : Long? {
+        return lockedUser.putIfAbsent(userId, newJobId)
+    }
+
+
+    private fun releaseUser(userId: String) {
+        lockedUser.remove(userId)
+    }
+
+    class UserLockGuard(val userId: String, val parent: SelectCourseVerticle) {
+        fun done() {
+            parent.releaseUser(userId)
         }
     }
 
